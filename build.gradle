@@ -1,0 +1,43 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'com.xy'
+version = '2.0'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://repo.tabooproject.org/repository/releases/' }   // Chemdah API
+    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' } // Spigot API
+    maven { url 'https://jitpack.io' }                                  // for NBT-API
+}
+
+dependencies {
+    // Spigot API（由服务器提供，编译时需要）
+    compileOnly 'org.spigotmc:spigot-api:1.12.2-R0.1-SNAPSHOT'
+
+    // 所有前置插件（DragonCore, Chemdah, PlaceholderAPI）从本地 libs 文件夹加载
+    // 你需要将这三个插件的 .jar 文件放入项目根目录下的 libs/ 文件夹
+    compileOnly fileTree(dir: 'libs', include: '*.jar')
+
+    // Chemdah API（如果本地 libs 中已有完整插件，也可不单独引，但为保险保留远程）
+    // 注意：如果 libs 里已有 Chemdah-xxx.jar，下面这行可以注释掉，避免冲突
+    compileOnly 'ink.ptms.chemdah:api:1.1.15'
+
+    // NBT API（将被 shade 到插件内）
+    implementation 'com.github.tr7zw:Item-NBT-API:2.15.7'
+}
+
+processResources {
+    filesMatching('plugin.yml') {
+        expand(project.properties)
+    }
+}
+
+shadowJar {
+    relocate 'de.tr7zw.changeme.nbtapi', 'com.xy.xychemdahshow.shaded.nbtapi'
+    archiveClassifier.set('')
+}
+
+build.dependsOn shadowJar
