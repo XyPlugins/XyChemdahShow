@@ -1,0 +1,45 @@
+package xy.xychemdahshow.hook;
+
+import org.bukkit.entity.Player;
+import xy.xychemdahshow.XyChemdahShow;
+
+import java.lang.reflect.Method;
+
+public final class PlaceholderBridge {
+
+    private final XyChemdahShow plugin;
+    private Method setPlaceholders;
+    private boolean searched;
+
+    public PlaceholderBridge(XyChemdahShow plugin) {
+        this.plugin = plugin;
+    }
+
+    public String apply(Player player, String text) {
+        if (text == null || text.isEmpty() || !isAvailable()) {
+            return text == null ? "" : text;
+        }
+
+        try {
+            return (String) setPlaceholders.invoke(null, player, text);
+        } catch (Exception ignored) {
+            return text;
+        }
+    }
+
+    private boolean isAvailable() {
+        if (!searched) {
+            searched = true;
+            if (!plugin.getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+                return false;
+            }
+            try {
+                Class<?> placeholderApi = Class.forName("me.clip.placeholderapi.PlaceholderAPI");
+                setPlaceholders = placeholderApi.getMethod("setPlaceholders", Player.class, String.class);
+            } catch (Exception ignored) {
+                setPlaceholders = null;
+            }
+        }
+        return setPlaceholders != null;
+    }
+}
