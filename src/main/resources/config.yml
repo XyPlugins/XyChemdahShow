@@ -1,6 +1,0 @@
-# HUD刷新延迟 (单位tick, 20tick=1秒)
-huddelay: 30
-# 玩家进服后首次显示HUD的延迟
-joindelay: 60
-# 当玩家没有任务时是否自动关闭HUD
-deletehud: false
