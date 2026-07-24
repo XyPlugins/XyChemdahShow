@@ -1,0 +1,24 @@
+# HUD 普通刷新延迟，20 tick = 1 秒。
+huddelay: 30
+
+# 任务进度推进刷新延迟。击杀、挖掘等实时进度建议保持较低。
+progress-refresh-delay: 3
+
+# 玩家进服后首次显示任务 HUD 的延迟。
+joindelay: 60
+
+# 玩家没有可显示任务时，是否自动关闭 HUD。
+deletehud: false
+
+# deletehud 为 false 且玩家没有任务时显示的文字。
+empty-text: '§7暂无正在进行的任务'
+
+# 是否在子任务后显示 Chemdah 计数进度，例如 1/10。
+task-progress-enabled: true
+
+# 子任务未完成时的进度显示格式。
+# 可用变量：%current% 当前进度，%target% 目标进度，%percent% 百分比。
+task-progress-format: ' §8[§a%current%§7/§e%target%§8]'
+
+# 子任务已完成时的进度显示格式。
+task-completed-progress-format: ' §8[§a%current%§7/§a%target%§8]'

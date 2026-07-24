@@ -4,13 +4,14 @@ plugins {
 }
 
 group = 'com.xy'
-version = '2.0'
+version = '1.4.2'
 
 repositories {
     mavenCentral()
     maven { url 'https://repo.tabooproject.org/repository/releases/' }   // Chemdah API
     maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' } // Spigot API
-    maven { url 'https://jitpack.io' }                                  // for NBT-API
+    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/public/' } // Spigot transitive dependencies
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' } // BungeeCord chat snapshots for Spigot 1.12
 }
 
 dependencies {
@@ -24,9 +25,6 @@ dependencies {
     // Chemdah API（如果本地 libs 中已有完整插件，也可不单独引，但为保险保留远程）
     // 注意：如果 libs 里已有 Chemdah-xxx.jar，下面这行可以注释掉，避免冲突
     compileOnly 'ink.ptms.chemdah:api:1.1.15'
-
-    // NBT API（将被 shade 到插件内）
-    implementation 'com.github.tr7zw:Item-NBT-API:2.15.7'
 }
 
 processResources {
@@ -36,8 +34,10 @@ processResources {
 }
 
 shadowJar {
-    relocate 'de.tr7zw.changeme.nbtapi', 'com.xy.xychemdahshow.shaded.nbtapi'
     archiveClassifier.set('')
 }
 
 build.dependsOn shadowJar
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

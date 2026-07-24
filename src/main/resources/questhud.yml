@@ -1,0 +1,94 @@
+match: "hud"
+priority: 4
+through: true
+
+Functions:
+  open: |-
+    方法.debug(false);
+    界面变量.展开="true";
+    界面变量.背景滑动=false;
+    界面变量.子滚动值=0;
+
+  wheel: |-
+    if (界面变量.背景滑动) {
+    界面变量.子滚动值 = 界面变量.子滚动值 + 方法.取滚轮值;
+    界面变量.子滚动值 = 方法.min(0,界面变量.子滚动值);
+    界面变量.子滚动值 = 方法.max(-65,界面变量.子滚动值);
+    };
+
+任务栏标题背景:
+  type: "图片"
+  x: "w - 140 - 3"                       # 紧贴右边缘
+  y: 3                                # 紧贴顶部
+  width: 140
+  height: 12
+  texture: "gui/任务栏/任务栏标题.png"
+  maxDistanceX: w
+  maxDistanceY: h
+  minDistanceX: -w
+  minDistanceY: -h
+
+标题_字:
+  type: "文本"
+  x: "任务栏标题背景.x + 任务栏标题背景.width/2 + 任务栏标题背景.distanceX"
+  y: "任务栏标题背景.y + 2 + 任务栏标题背景.distanceY"
+  center: true
+  texts: "§7当前共 §a [%xychemdahshow_task_amount%] 项委托待完成"
+
+任务栏背景:
+  type: "图片"
+  x: "任务栏标题背景.x + 任务栏标题背景.distanceX"
+  y: "任务栏标题背景.y + 任务栏标题背景.height + 任务栏标题背景.distanceY + 2"
+  width: "任务栏标题背景.width"
+  height: 80
+  limitX: "滚动_背景.x"
+  limitY: "滚动_背景.y"
+  limitWidth: "滚动_背景.width"
+  limitHeight: "滚动_背景.height"
+  texture: "gui/任务栏/任务栏.png"
+  visible: 界面变量.展开
+
+任务信息_label:
+  type: "文本"
+  x: "任务栏背景.x+3"
+  y: "任务栏背景.y+3 + 界面变量.子滚动值 * 8"
+  width: "任务栏背景.width-6"
+  height: "任务栏背景.height-6"
+  limitX: "任务栏背景.x+2"
+  limitY: "任务栏背景.y+2"
+  limitWidth: "任务栏背景.width-4"
+  limitHeight: "任务栏背景.height-4"
+  visible: 界面变量.展开
+  actions:
+    leave: |-
+      界面变量.背景滑动=false;
+    enter: |-
+      界面变量.背景滑动=true;
+  texts: ""
+
+滚动_背景:
+  type: "图片"
+  x: "任务栏背景.x"
+  y: "任务栏背景.y"
+  width: 任务栏背景.width
+  height: 120
+  texture: "255,255,255,0"
+
+显示隐藏任务:
+  type: "图片"
+  x: "任务栏标题背景.x+任务栏标题背景.width-显示隐藏任务.width-1+任务栏标题背景.distanceX"
+  y: "任务栏标题背景.y+2+任务栏标题背景.distanceY"
+  width: 20
+  height: 9
+  text: "§7收起"
+  texture: "255,255,255,0"
+  actions:
+    click_left: |-
+      方法.播放声音;
+      (显示隐藏任务.text=="§7收起")?{
+        显示隐藏任务.text="§f展开";
+        界面变量.展开="false";
+      }:{
+        显示隐藏任务.text="§7收起";
+        界面变量.展开="true";
+      };

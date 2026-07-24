@@ -46,3 +46,22 @@
 
 - 已进行 Java 编译验证。
 - 已检查输出 jar 中包含新版 `plugin.yml`、`config.yml`、`questhud.yml` 与更新后的监听器/HUD 类。
+
+## 2026-07-25 / 1.4.2
+
+### 使用目标
+
+- 协助取消插件对 DragonCore HUD 标题组件的运行时覆盖。
+- 协助将 `addon.xychshow.type` 与 `addon.xychshow.location` 改为原样显示，不再自动添加中括号。
+- 协助补齐 `%xychemdahshow_*%` PlaceholderAPI 变量，使 `questhud.yml` 可直接负责标题等界面文本。
+
+### 使用方式
+
+- AI 辅助检查 `HudService`、`PluginSettings`、`PlaceholderBridge` 与默认资源配置。
+- AI 辅助新增轻量 PlaceholderAPI 变量注册逻辑，并保持任务内容刷新仍走 Chemdah 事件触发。
+- AI 辅助同步更新版本号、README 与更新记录，便于测试后推送 GitHub。
+
+### 验证记录
+
+- 已进行 Java 编译验证与 jar 内容检查。
+- 运行期需在服务器中确认：修改 `questhud.yml` 的 `标题_字.texts` 后不再被插件覆盖；需要中括号时由任务配置字段自行填写。

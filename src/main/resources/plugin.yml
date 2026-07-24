@@ -1,0 +1,16 @@
+name: XyChemdahShow
+version: '1.4.2'
+author: Xy
+main: xy.xychemdahshow.XyChemdahShow
+depend:
+  - DragonCore
+  - Chemdah
+softdepend:
+  - PlaceholderAPI
+commands:
+  xychshow:
+    description: Chemdah task HUD view
+    usage: /xychshow
+permissions:
+  xychemdahshow.admin:
+    default: op
