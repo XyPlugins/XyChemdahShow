@@ -1,7 +1,9 @@
 package xy.xychemdahshow;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import xy.xychemdahshow.command.MainCommand;
 import xy.xychemdahshow.config.PluginSettings;
@@ -10,16 +12,20 @@ import xy.xychemdahshow.hook.ChemdahBridge;
 import xy.xychemdahshow.hook.PlaceholderBridge;
 import xy.xychemdahshow.hud.HudService;
 import xy.xychemdahshow.listener.PluginListener;
+import xy.xychemdahshow.nav.NavigationService;
 
 import java.io.File;
 
 public final class XyChemdahShow extends JavaPlugin {
+
+    private static final String DEFAULT_XYCORE_PREFIX = "&7[&bXyCore&7]&r";
 
     private PluginSettings settings;
     private QuestViewRegistry questViews;
     private ChemdahBridge chemdahBridge;
     private PlaceholderBridge placeholderBridge;
     private HudService hudService;
+    private NavigationService navigationService;
 
     @Override
     public void onEnable() {
@@ -30,6 +36,7 @@ public final class XyChemdahShow extends JavaPlugin {
         this.chemdahBridge = new ChemdahBridge();
         this.placeholderBridge = new PlaceholderBridge(this);
         this.hudService = new HudService(this, settings, questViews, chemdahBridge, placeholderBridge);
+        this.navigationService = new NavigationService(this);
 
         reloadInternal(false);
         placeholderBridge.registerInternalExpansion();
@@ -47,6 +54,9 @@ public final class XyChemdahShow extends JavaPlugin {
         if (placeholderBridge != null) {
             placeholderBridge.unregisterInternalExpansion();
         }
+        if (navigationService != null) {
+            navigationService.stopAll();
+        }
         log(Bukkit.getConsoleSender(), "插件已卸载");
     }
 
@@ -54,6 +64,9 @@ public final class XyChemdahShow extends JavaPlugin {
         settings.reload();
         questViews.reload();
         chemdahBridge.refreshProfiles();
+        if (navigationService != null) {
+            navigationService.refreshTaskInterval();
+        }
 
         if (refreshOnlinePlayers) {
             hudService.refreshAll(true);
@@ -72,8 +85,36 @@ public final class XyChemdahShow extends JavaPlugin {
         return hudService;
     }
 
+    public NavigationService getNavigationService() {
+        return navigationService;
+    }
+
     public static void log(CommandSender sender, String message) {
-        sender.sendMessage("§a[XyChemdahShow] §f" + message);
+        sender.sendMessage(color(getUnifiedPrefix() + "&f" + message));
+    }
+
+    public static String getMessagePrefix() {
+        return color(getUnifiedPrefix());
+    }
+
+    public static String color(String text) {
+        return ChatColor.translateAlternateColorCodes('&', text == null ? "" : text);
+    }
+
+    private static String getUnifiedPrefix() {
+        String prefix = getXyCorePrefix();
+        if (prefix == null || prefix.trim().isEmpty()) {
+            prefix = DEFAULT_XYCORE_PREFIX;
+        }
+        return prefix.endsWith(" ") ? prefix : prefix + " ";
+    }
+
+    private static String getXyCorePrefix() {
+        Plugin core = Bukkit.getPluginManager().getPlugin("XyCore");
+        if (!(core instanceof JavaPlugin) || !core.isEnabled()) {
+            return null;
+        }
+        return ((JavaPlugin) core).getConfig().getString("messages.prefix", DEFAULT_XYCORE_PREFIX);
     }
 
     private void saveDefaultFiles() {

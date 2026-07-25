@@ -1,3 +1,7 @@
+# 总开关：是否开启任务导航。
+# 关闭后玩家执行 /xychshow nav 会提示导航未启用。
+navigation-enabled: true
+
 # HUD 普通刷新延迟，20 tick = 1 秒。
 huddelay: 30
 
@@ -22,3 +26,45 @@ task-progress-format: ' §8[§a%current%§7/§e%target%§8]'
 
 # 子任务已完成时的进度显示格式。
 task-completed-progress-format: ' §8[§a%current%§7/§a%target%§8]'
+# 结构化任务视图每行的显示格式。
+# 可用变量：%label% 标签名，%value% 内容值。
+# 例如想显示 类型=击杀委托，可以改为 '&7%label%=&f%value%'。
+structured-line-format: '&7%label%: &f%value%'
+
+# 结构化任务视图标签名称。这里控制“类型、地点、目标、详情”这些前缀文字。
+structured-labels:
+  type: '类型'
+  location: '地点'
+  target: '目标'
+  detail: '详情'
+
+# 任务导航功能。任务中配置 addon.xychshow.nav 或 addon.track 坐标后，玩家可通过 /xychshow nav 开始或停止导航。
+# DragonCore 平面箭头贴图的视觉配置位于 questhud.yml 的 任务导航按钮.navigation 下。
+navigation:
+  # 导航粒子刷新频率，20 tick = 1 秒。
+  # 数值越小刷新越快，视觉更连贯，但消耗也会更高。
+  particle-interval: 8
+  # 距离目标多少格内自动停止导航。
+  arrive-distance: 3.0
+  # 粒子的密集程度。数值越小粒子越密，数值越大粒子越稀。
+  particle-spacing: 0.9
+  # 箭头头部长度。
+  arrow-head-length: 1.4
+  # 单次刷新最多生成多少个路线粒子点。数值越大线路越长，但粒子数量也越多。
+  max-points: 80
+  # 是否让路线粒子跟随地面高度。
+  # 开启后粒子会在每个路线点附近寻找可站立表面，减少悬崖、坡道处悬空的问题。
+  ground-follow-enabled: true
+  # 贴地搜索时，允许从上一粒子高度向上找多少格。
+  # 地形上坡明显时可适当调大，室内屋顶较低时不建议过大。
+  ground-search-up: 4
+  # 贴地搜索时，允许从上一粒子高度向下找多少格。
+  # 悬崖较深时可调大，但数值越大每次刷新检查的方块越多。
+  ground-search-down: 48
+  # 粒子离地高度。
+  ground-offset: 0.15
+  # 导航路线粒子效果。
+  # 可直接写 Bukkit 1.12.2 粒子名，例如 VILLAGER_HAPPY、END_ROD、SPELL_WITCH、CRIT_MAGIC、FLAME、TOTEM。
+  # 也可写预设名：绿色箭头、白色光点、魔法紫、蓝紫闪光、火焰、经验球风格。
+  # 注意：经验球风格是粒子模拟，不会生成经验球实体。
+  particle: 绿色箭头

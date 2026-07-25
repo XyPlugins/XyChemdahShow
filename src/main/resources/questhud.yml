@@ -30,10 +30,10 @@ Functions:
 
 标题_字:
   type: "文本"
-  x: "任务栏标题背景.x + 任务栏标题背景.width/2 + 任务栏标题背景.distanceX"
+  x: "任务栏标题背景.x + 任务栏标题背景.width/2 + 任务栏标题背景.distanceX-3"
   y: "任务栏标题背景.y + 2 + 任务栏标题背景.distanceY"
   center: true
-  texts: "§7当前共 §a [%xychemdahshow_task_amount%] 项委托待完成"
+  texts: "§7当前共 §a[%xychemdahshow_task_amount%]§7 项委托待完成"
 
 任务栏背景:
   type: "图片"
@@ -58,6 +58,7 @@ Functions:
   limitY: "任务栏背景.y+2"
   limitWidth: "任务栏背景.width-4"
   limitHeight: "任务栏背景.height-4"
+  scale: 0.95
   visible: 界面变量.展开
   actions:
     leave: |-
@@ -65,6 +66,51 @@ Functions:
     enter: |-
       界面变量.背景滑动=true;
   texts: ""
+
+任务导航按钮:
+  type: "图片"
+  x: "任务栏背景.x + 任务栏背景.width - 15"
+  y: "任务栏背景.y + 4"
+  width: 10
+  height: 10
+  # 任务栏右上角按钮贴图，这是普通 DragonCore HUD 图片路径。
+  texture: "gui/任务栏/导航.png"
+  visible: 界面变量.展开
+  # XyChemdahShow 导航视觉配置。插件读取后不会把该节点发送给 DragonCore 客户端。
+  navigation:
+    # particle = Bukkit 粒子路线。
+    # dragoncore-arrow = DragonCore 平面箭头贴图路线。
+    render-mode: dragoncore-arrow
+    dragoncore-arrow:
+      # WorldTexture 建议使用纯英文资源路径，中文目录在部分 DragonCore 版本中会显示为空白。
+      # 如果服务器实测该路径可显示，可以继续使用当前路径；若空白，建议改为 xychemdahshow/nav_arrow.png 这类纯英文路径。
+      texture: "任务栏/导航箭头.png"
+      # 单个地面箭头贴图宽度，单位约等于方块宽度。
+      width: 0.65
+      # 单个地面箭头贴图高度，单位约等于方块宽度。
+      height: 0.65
+      # 箭头之间的间距。越小越密，显示更连续，但客户端贴图数量会更多。
+      spacing: 1.4
+      # 单次最多显示多少个地面箭头。越大路线越长，但服务端发包和客户端渲染都会增加。
+      max-points: 48
+      # DragonCore 世界贴图路线刷新间隔，20 tick = 1 秒。数值越小越顺滑，消耗也越高。
+      update-interval: 2
+      # 平铺在地面上的 X 轴旋转。通常 90 表示贴地。
+      rotation-x: 90
+      # 如果路线方向对，但箭头图案朝左/朝右，就调这里：常用 0、90、-90、180。
+      rotation-y-offset: 0
+      # Z 轴旋转，一般保持 0。只有贴图本身歪斜时才需要调整。
+      rotation-z: 0
+      # 透明度，1.0 = 不透明，0.5 = 半透明。
+      alpha: 1.0
+      # 是否穿墙显示。false 更自然，true 更容易在复杂地形中看到。
+      through: false
+      # 是否启用发光效果。发光更醒目，但客户端渲染压力略高。
+      glow: true
+  actions:
+    click_left: |-
+      方法.播放声音;
+      方法.聊天('/xychshow nav');
 
 滚动_背景:
   type: "图片"

@@ -29,6 +29,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -36,6 +37,7 @@ public final class HudService {
 
     private static final String HUD_NAME = "questhud";
     private static final String HUD_PATH = "Gui/questhud.yml";
+    private static final String HUD_TEXT_COMPONENT = "任务信息_label";
 
     private final XyChemdahShow plugin;
     private final PluginSettings settings;
@@ -108,6 +110,7 @@ public final class HudService {
         text = applyInternalVariables(player, text, activeQuests);
         text = placeholderBridge.apply(player, text);
         setHudText(player, text);
+        refreshVariableTextComponents(player, activeQuests);
     }
 
     private void openHud(Player player, boolean sendYaml) {
@@ -124,7 +127,29 @@ public final class HudService {
     }
 
     private void setHudText(Player player, String text) {
-        String function = "方法.设置组件值('任务信息_label','texts','" + Texts.escapeDragonCoreString(text) + "');";
+        setComponentText(player, HUD_TEXT_COMPONENT, text);
+    }
+
+    private void refreshVariableTextComponents(Player player, List<Quest> activeQuests) {
+        Map<String, String> templates = settings.getHudVariableTextTemplates();
+        if (templates.isEmpty()) {
+            return;
+        }
+
+        for (Map.Entry<String, String> entry : templates.entrySet()) {
+            String component = entry.getKey();
+            if (!hasText(component) || HUD_TEXT_COMPONENT.equals(component)) {
+                continue;
+            }
+
+            String text = applyInternalVariables(player, entry.getValue(), activeQuests);
+            text = placeholderBridge.apply(player, text);
+            setComponentText(player, component, text);
+        }
+    }
+
+    private void setComponentText(Player player, String component, String text) {
+        String function = "方法.设置组件值('" + Texts.escapeDragonCoreString(component) + "','texts','" + Texts.escapeDragonCoreString(text) + "');";
         PacketSender.sendRunFunction(player, HUD_NAME, function, false);
     }
 
@@ -229,10 +254,10 @@ public final class HudService {
         String type = firstText(customType, getContainerMetaText(template, "type"));
         lines.add(Texts.color("&6" + getQuestDisplayName(quest)));
         if (hasText(type)) {
-            lines.add(Texts.color("&7类型: &f" + type));
+            lines.add(formatStructuredLine(settings.getStructuredTypeLabel(), type));
         }
         if (hasText(location)) {
-            lines.add(Texts.color("&7地点: &f" + location));
+            lines.add(formatStructuredLine(settings.getStructuredLocationLabel(), location));
         }
 
         List<Task> sortedTasks = getSortedTasks(quest);
@@ -242,20 +267,30 @@ public final class HudService {
             if (sortedTasks.size() == 1) {
                 progressText = getTaskProgressText(profile, sortedTasks.get(0));
             }
-            lines.add(Texts.color("&7目标: &f" + target + progressText));
+            lines.add(formatStructuredLine(settings.getStructuredTargetLabel(), target + progressText));
         } else {
             for (Task task : sortedTasks) {
-                lines.add(Texts.color("&7目标: &f" + getTaskDisplayName(task) + getTaskProgressText(profile, task)));
+                lines.add(formatStructuredLine(settings.getStructuredTargetLabel(), getTaskDisplayName(task) + getTaskProgressText(profile, task)));
             }
         }
 
-        if (!hasText(detail)) {
-            detail = getConfigText(template, "addon.ui.description");
-        }
+
         if (hasText(detail)) {
-            lines.add(Texts.color("&7详情: &f" + detail));
+            lines.add(formatStructuredLine(settings.getStructuredDetailLabel(), detail));
         }
         return true;
+    }
+
+    private String formatStructuredLine(String label, String value) {
+        String safeLabel = label == null ? "" : label;
+        String safeValue = value == null ? "" : value;
+        if (!hasText(safeLabel)) {
+            return Texts.color("&f" + safeValue);
+        }
+
+        return settings.getStructuredLineFormat()
+                .replace("%label%", safeLabel)
+                .replace("%value%", safeValue);
     }
 
     private List<Task> getSortedTasks(Quest quest) {

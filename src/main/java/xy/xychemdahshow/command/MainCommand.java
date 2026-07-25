@@ -46,6 +46,15 @@ public final class MainCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
+        if ("nav".equalsIgnoreCase(args[0])) {
+            if (!(sender instanceof Player)) {
+                XyChemdahShow.log(sender, "该命令只能由玩家执行");
+                return true;
+            }
+            plugin.getNavigationService().toggleNavigation((Player) sender);
+            return true;
+        }
+
         sendHelp(sender);
         return true;
     }
@@ -56,7 +65,7 @@ public final class MainCommand implements CommandExecutor, TabCompleter {
             return null;
         }
 
-        List<String> options = new ArrayList<String>(Arrays.asList("refresh"));
+        List<String> options = new ArrayList<String>(Arrays.asList("refresh", "nav"));
         if (sender.hasPermission("xychemdahshow.admin")) {
             options.add("reload");
         }
@@ -71,11 +80,11 @@ public final class MainCommand implements CommandExecutor, TabCompleter {
     }
 
     private void sendHelp(CommandSender sender) {
-        sender.sendMessage("§6§m================§c§m===§a§lXyChemdahShow§c§m===§6§m================");
-        sender.sendMessage("§6/xychshow refresh §f- 刷新自己的任务 HUD");
+        XyChemdahShow.log(sender, "XyChemdahShow 命令帮助");
+        sender.sendMessage(XyChemdahShow.color("&6/xychshow refresh &f- 刷新自己的任务 HUD"));
+        sender.sendMessage(XyChemdahShow.color("&6/xychshow nav &f- 开始或停止当前任务导航"));
         if (sender.hasPermission("xychemdahshow.admin")) {
-            sender.sendMessage("§6/xychshow reload §f- 重载配置并刷新在线玩家");
+            sender.sendMessage(XyChemdahShow.color("&6/xychshow reload &f- 重载配置并刷新在线玩家"));
         }
-        sender.sendMessage("§6§m================================================");
     }
 }

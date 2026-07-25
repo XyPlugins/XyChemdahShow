@@ -1,82 +1,100 @@
 # XyChemdahShow 使用说明
 
-本文面向服务器管理员，说明如何安装、配置和验证 XyChemdahShow 1.4.2。
+## 安装
 
-## 快速开始
+1. 将 `XyChemdahShow-1.6.0.jar` 放入服务器 `plugins` 目录。
+2. 确认服务器已安装 DragonCore 与 Chemdah。
+3. 可选安装 PlaceholderAPI 与 XyCore。
+4. 启动服务器生成 `plugins/XyChemdahShow/config.yml` 与 `questhud.yml`。
+5. 修改配置后使用 `/xychshow reload` 重载。
 
-1. 安装 DragonCore 与 Chemdah。
-2. 将 `XyChemdahShow-1.4.2.jar` 放入 `plugins` 目录。
-3. 需要标题变量时安装 PlaceholderAPI。
-4. 启动服务器，等待生成 `plugins/XyChemdahShow` 配置目录。
-5. 修改 `questhud.yml` 调整 HUD 外观。
-6. 修改 `config.yml` 调整刷新延迟、空任务文字和进度格式。
-7. 进入游戏后使用 `/xychshow refresh` 验证显示效果。
+## 命令
 
-## 推荐配置流程
+- `/xychshow refresh`：刷新自己的任务 HUD。
+- `/xychshow nav`：开始或停止当前任务导航。
+- `/xychshow reload`：重载配置并刷新在线玩家，需要 `xychemdahshow.admin`。
 
-### 1. 先调 HUD 外观
+## Chemdah 任务展示字段
 
-优先编辑 `questhud.yml`。1.4.2 起插件不再运行时覆盖标题，所以标题、背景、坐标、字体、颜色都可以在 DragonCore GUI 配置里直接维护。
+可在 Chemdah 任务配置中写入：
 
-任务正文组件请保留名称 `任务信息_label`，插件会向它的 `texts` 字段写入任务内容。
-
-### 2. 再调刷新策略
-
-`config.yml` 中常用项：
-
-```yaml
-huddelay: 30
-progress-refresh-delay: 3
-joindelay: 60
-deletehud: false
-empty-text: '§7暂无正在进行的任务'
-task-progress-enabled: true
-task-progress-format: ' §8[§a%current%§7/§e%target%§8]'
-task-completed-progress-format: ' §8[§a%current%§7/§a%target%§8]'
-```
-
-击杀、采集、挖掘这类高频任务建议保留较低的 `progress-refresh-delay`。如果服务器任务事件非常频繁，可以适当调高。
-
-### 3. 给任务补展示字段
-
-在 Chemdah 任务配置中加入：
-
-```yaml
+```yml
 addon:
   xychshow:
-    type: 日常委托
-    location: 墨源城山丘
-    target: 击杀10只獠牙赤猪
-    detail: 前往墨源城山丘处击杀10只獠牙赤猪。
+    type: "主线"
+    location: "墨源城"
+    target: "击杀10只獠牙赤猪"
+    detail: "前往墨源城山丘处击杀獠牙赤猪"
 ```
 
-这些字段只影响 HUD 展示，不改变 Chemdah 任务逻辑。未填写时插件会自动读取任务名和子任务名进行简易显示。
+`type/location/target/detail` 的前缀文字可在 `config.yml` 的 `structured-labels` 修改。
 
-## 可用变量
+## 导航坐标
+
+推荐写法：
+
+```yml
+addon:
+  xychshow:
+    nav:
+      world: world
+      x: 63
+      y: 22
+      z: 118
+```
+
+兼容 Chemdah `addon.track`：
+
+```yml
+addon:
+  track:
+    world: world
+    x: 63
+    y: 22
+    z: 118
+```
+
+玩家点击任务栏导航按钮后会执行 `/xychshow nav`。
+
+## HUD 变量
 
 - `%xychemdahshow_player%`：玩家名。
-- `%xychemdahshow_task_amount%`：正在进行的任务数量。
-- `%xychemdahshow_task_names%`：正在进行的任务名列表。
-- `%xychemdahshow_completed_amount%`：已完成子目标数量。
+- `%xychemdahshow_task_amount%`：玩家当前进行中的 Chemdah 任务数量。
+- `%xychemdahshow_task_names%`：玩家当前任务名称，多个任务用逗号分隔。
+- `%xychemdahshow_completed_amount%`：当前正在进行任务中已完成的子目标数量。
 
-任务正文中的变量由插件内部替换。`questhud.yml` 标题或静态文本中的变量需要 PlaceholderAPI 与 DragonCore 侧解析支持。
+这些变量可写在 `questhud.yml` 的文本组件中，也会注册到 PlaceholderAPI。
 
-## 重载与验证
+## DragonCore 箭头导航
 
-- 修改 `config.yml` 或 `questhud.yml` 后执行 `/xychshow reload`。
-- 只想刷新自己的 HUD 时执行 `/xychshow refresh`。
-- Chemdah 任务重载时，插件会尝试同步重载任务视图并刷新在线玩家。
+默认配置位于 `questhud.yml -> 任务导航按钮.navigation`：
 
-## 常见问题
+```yml
+navigation:
+  render-mode: dragoncore-arrow
+  dragoncore-arrow:
+    texture: "任务栏/导航箭头.png"
+    width: 0.65
+    height: 0.65
+    spacing: 1.4
+    max-points: 48
+    update-interval: 2
+    rotation-x: 90
+    rotation-y-offset: 0
+    rotation-z: 0
+    alpha: 1.0
+    through: false
+    glow: true
+```
 
-### HUD 标题为什么不跟着 config.yml 变了？
+如果箭头图片空白，优先把 `texture` 改成纯英文路径，例如 `xychemdahshow/nav_arrow.png`，并确认资源包中存在该贴图。
 
-1.4.2 起标题完全交给 `questhud.yml`。这是为了让界面外观统一由 DragonCore GUI 配置管理，插件只负责写入任务正文。
+## 性能建议
 
-### 没装 PlaceholderAPI 能不能用？
+默认不会全服每 tick 扫任务。HUD 刷新由 Chemdah 事件、玩家进服、手动刷新和重载触发。
 
-可以。任务 HUD 正文刷新不依赖 PlaceholderAPI。只有当你要在 HUD 标题或静态文本中使用 `%xychemdahshow_*%` 变量时，才需要 PlaceholderAPI。
+导航只对正在导航的玩家运行。DragonCore 箭头路线默认 `update-interval: 2`，更顺滑但发包更频繁；在线导航人数多时建议调到 `3` 或 `4`。`max-points`、`ground-search-down` 越大，贴地路线检查方块越多。
 
-### 任务没有进度数字怎么办？
+## XyCore 前缀
 
-确认 `task-progress-enabled` 为 `true`，并确认 Chemdah 子任务本身提供可读取的计数目标。没有计数目标的任务不会强制显示 `0/1`。
+安装 XyCore 时，插件提示会读取 `plugins/XyCore/config.yml -> messages.prefix`。未安装 XyCore 时使用默认 `&7[&bXyCore&7]&r`，不会影响插件启动。
