@@ -1,5 +1,17 @@
 # 更新记录
 
+## 1.6.6 - 2026-08-02
+
+### 调整
+
+- 基于 GitHub 最新 `1.6.5` 代码确认并保留最终前缀语义。
+- 玩家导航提示使用 XyCore `messages.prefix`，未安装 XyCore 时回退本插件前缀。
+- `/xychshow help/refresh/reload` 的管理反馈、权限不足、只能玩家执行、后台日志和配置加载提示继续使用 XyChemdahShow 本地前缀。
+
+### 验证
+
+- 已执行 `gradlew.bat compileJava --no-daemon` 通过；Chemdah/Kotlin 依赖注解警告不影响构建。
+
 ## 1.6.5 - 2026-08-01
 
 ### 新增

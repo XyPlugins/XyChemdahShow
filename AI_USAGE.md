@@ -1,5 +1,22 @@
 # AI 使用记录
 
+## 2026-08-02 / 1.6.6
+
+### 使用目标
+
+- 根据服主要求，以 GitHub 最新 `XyChemdahShow 1.6.5` 为基础确认最终前缀语义。
+- 保留玩家导航提示走 XyCore，管理/帮助/报错和后台日志走 XyChemdahShow。
+
+### 使用方式
+
+- AI 辅助同步最新源码后检查 `XyChemdahShow.log` 与 `playerLog` 两个入口。
+- 确认 `NavigationService` 使用 `playerLog`，`MainCommand`、配置加载、插件启动/卸载使用 `log`。
+- 本次不改变 HUD 保活、导航按钮隐藏、地面箭头清理和 Chemdah 事件刷新逻辑。
+
+### 验证记录
+
+- 已执行 `gradlew.bat compileJava --no-daemon` 通过；构建阶段的 Kotlin 注解警告来自依赖，不影响 Java 编译。
+
 ## 2026-08-01 / 1.6.5
 
 ### 使用目标

@@ -10,7 +10,7 @@
 
 可选依赖：
 - PlaceholderAPI
-- XyCore（用于统一读取 `messages.prefix` 插件消息前缀；未安装时使用XyChemdahShow自己的本地前缀兜底）
+- XyCore（用于导航等玩家玩法提示统一读取 `messages.prefix`；未安装时使用XyChemdahShow自己的本地前缀兜底）
 
 ## 功能范围
 
@@ -22,10 +22,16 @@
 - Chemdah 任务接取、推进、完成、失败、重启、重载后自动刷新 HUD。
 - 支持可配置 HUD 保活刷新，缓解 DragonCore 任务栏待久后自动消失或内容丢失的问题。
 - 支持任务导航：Bukkit 粒子路线或 DragonCore 平面箭头路线。
-- 插件提示安装 XyCore 时优先读取 `plugins/XyCore/config.yml -> messages.prefix`，未安装时使用本插件前缀独立运行。
+- 导航等玩家玩法提示安装 XyCore 时优先读取 `plugins/XyCore/config.yml -> messages.prefix`，未安装时使用本插件前缀独立运行；help、reload、后台日志等管理提示保留本插件前缀。
 - 保留奖励配置解析接口，当前轻量版不提供旧版背包奖励预览界面。
 
 ## 更新日志
+
+### 1.6.6 - 2026-08-02
+
+- 在 GitHub 最新 `1.6.5` 基础上按服主最终确认复核前缀语义。
+- 玩家导航提示继续使用 XyCore `messages.prefix`；help、reload、无权限、只能玩家执行和后台日志继续使用 XyChemdahShow 本地前缀。
+- 版本提升至 `1.6.6`，用于区分本次统一前缀语义修正版。
 
 ### 1.6.5 - 2026-08-01
 
@@ -231,7 +237,7 @@ addon:
 
 玩家导航提示使用 XyCore 风格前缀：
 
-- 已安装并启用 XyCore 0.3.11+：通过 XyCore 统一前缀 API 读取 `messages.prefix`。
+- 已安装并启用 XyCore 0.3.12+：通过 XyCore 统一前缀 API 读取 `messages.prefix`。
 - 未安装、未启用或旧版 XyCore 无法提供前缀API：使用本插件 `config.yml -> messages.prefix`，默认 `&7[&bXyChemdahShow&7]&r `。
 
 后台日志、插件重载和管理类提示仍使用 XyChemdahShow 自身前缀。XyCore 是软依赖，不会影响 XyChemdahShow 独立运行。
