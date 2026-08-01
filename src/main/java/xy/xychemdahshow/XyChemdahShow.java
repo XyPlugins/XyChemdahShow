@@ -3,7 +3,6 @@ package xy.xychemdahshow;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import xy.xychemdahshow.command.MainCommand;
@@ -55,6 +54,9 @@ public final class XyChemdahShow extends JavaPlugin {
         if (placeholderBridge != null) {
             placeholderBridge.unregisterInternalExpansion();
         }
+        if (hudService != null) {
+            hudService.stopKeepAliveTask();
+        }
         if (navigationService != null) {
             navigationService.stopAll();
         }
@@ -67,6 +69,9 @@ public final class XyChemdahShow extends JavaPlugin {
         chemdahBridge.refreshProfiles();
         if (navigationService != null) {
             navigationService.refreshTaskInterval();
+        }
+        if (hudService != null) {
+            hudService.refreshKeepAliveTask();
         }
 
         if (refreshOnlinePlayers) {
@@ -91,24 +96,31 @@ public final class XyChemdahShow extends JavaPlugin {
     }
 
     public static void log(CommandSender sender, String message) {
-        String prefix = sender instanceof Player ? getUnifiedPrefix() : getLocalPrefix();
-        sender.sendMessage(color(prefix + "&f" + message));
+        sender.sendMessage(color(getLocalPrefix() + "&f" + message));
+    }
+
+    public static void playerLog(CommandSender sender, String message) {
+        sender.sendMessage(color(getUnifiedPlayerPrefix() + "&f" + message));
     }
 
     public static String getMessagePrefix() {
-        return color(getUnifiedPrefix());
+        return color(getUnifiedPlayerPrefix());
+    }
+
+    public static String getPluginMessagePrefix() {
+        return color(getLocalPrefix());
     }
 
     public static String color(String text) {
         return ChatColor.translateAlternateColorCodes('&', text == null ? "" : text);
     }
 
-    private static String getUnifiedPrefix() {
+    private static String getUnifiedPlayerPrefix() {
         String prefix = getXyCorePrefix();
         if (prefix == null || prefix.trim().isEmpty()) {
             prefix = getLocalPrefix();
         }
-        return prefix;
+        return withTrailingSpace(prefix);
     }
 
     private static String getXyCorePrefix() {
@@ -129,17 +141,23 @@ public final class XyChemdahShow extends JavaPlugin {
 
     private static String getLocalPrefix() {
         try {
-            return JavaPlugin.getPlugin(XyChemdahShow.class).getConfig()
-                    .getString("messages.prefix", DEFAULT_LOCAL_PREFIX);
+            return withTrailingSpace(JavaPlugin.getPlugin(XyChemdahShow.class).getConfig()
+                    .getString("messages.prefix", DEFAULT_LOCAL_PREFIX));
         } catch (IllegalStateException ignored) {
             return DEFAULT_LOCAL_PREFIX;
         }
     }
 
+    private static String withTrailingSpace(String prefix) {
+        if (prefix == null || prefix.trim().isEmpty()) {
+            return DEFAULT_LOCAL_PREFIX;
+        }
+        return prefix.endsWith(" ") ? prefix : prefix + " ";
+    }
+
     private void saveDefaultFiles() {
         saveDefaultConfig();
         saveResourceIfMissing("questhud.yml");
-        saveResourceIfMissing("Quest/任务配置.yml");
     }
 
     private void saveResourceIfMissing(String path) {

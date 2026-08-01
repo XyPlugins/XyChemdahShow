@@ -16,6 +16,9 @@ public final class PluginSettings {
 
     private final XyChemdahShow plugin;
     private int hudDelay;
+    private boolean hudKeepAliveEnabled;
+    private int hudKeepAliveInterval;
+    private boolean hudKeepAliveReopen;
     private int progressRefreshDelay;
     private int joinDelay;
     private boolean deleteHud;
@@ -65,6 +68,9 @@ public final class PluginSettings {
         hudYaml = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "questhud.yml"));
 
         hudDelay = Math.max(0, config.getInt("huddelay", 30));
+        hudKeepAliveEnabled = config.getBoolean("hud-keep-alive.enabled", true);
+        hudKeepAliveInterval = Math.max(20, config.getInt("hud-keep-alive.interval", 100));
+        hudKeepAliveReopen = config.getBoolean("hud-keep-alive.reopen-hud", false);
         progressRefreshDelay = Math.max(0, config.getInt("progress-refresh-delay", 3));
         joinDelay = Math.max(0, config.getInt("joindelay", 60));
         deleteHud = config.getBoolean("deletehud", false);
@@ -108,6 +114,18 @@ public final class PluginSettings {
 
     public int getHudDelay() {
         return hudDelay;
+    }
+
+    public boolean isHudKeepAliveEnabled() {
+        return hudKeepAliveEnabled;
+    }
+
+    public int getHudKeepAliveInterval() {
+        return hudKeepAliveInterval;
+    }
+
+    public boolean isHudKeepAliveReopen() {
+        return hudKeepAliveReopen;
     }
 
     public int getProgressRefreshDelay() {

@@ -20,7 +20,7 @@ Functions:
   type: "图片"
   x: "w - 140 - 3"                       # 紧贴右边缘
   y: 3                                # 紧贴顶部
-  width: 140
+  width: 120
   height: 12
   texture: "gui/任务栏/任务栏标题.png"
   maxDistanceX: w
@@ -30,9 +30,10 @@ Functions:
 
 标题_字:
   type: "文本"
-  x: "任务栏标题背景.x + 任务栏标题背景.width/2 + 任务栏标题背景.distanceX-3"
-  y: "任务栏标题背景.y + 2 + 任务栏标题背景.distanceY"
+  x: "任务栏标题背景.x + 任务栏标题背景.width/2 + 任务栏标题背景.distanceX-6"
+  y: "任务栏标题背景.y + 2.5 + 任务栏标题背景.distanceY"
   center: true
+  scale: 0.9
   texts: "§7当前共 §a[%xychemdahshow_task_amount%]§7 项委托待完成"
 
 任务栏背景:
@@ -50,15 +51,15 @@ Functions:
 
 任务信息_label:
   type: "文本"
-  x: "任务栏背景.x+3"
-  y: "任务栏背景.y+3 + 界面变量.子滚动值 * 8"
+  x: "任务栏背景.x+5"
+  y: "任务栏背景.y+16 + 界面变量.子滚动值 * 8"
   width: "任务栏背景.width-6"
-  height: "任务栏背景.height-6"
+  height: "任务栏背景.height-19"
   limitX: "任务栏背景.x+2"
-  limitY: "任务栏背景.y+2"
+  limitY: "任务栏背景.y+15"
   limitWidth: "任务栏背景.width-4"
-  limitHeight: "任务栏背景.height-4"
-  scale: 0.95
+  limitHeight: "任务栏背景.height-17"
+  scale: 0.9
   visible: 界面变量.展开
   actions:
     leave: |-
@@ -67,14 +68,27 @@ Functions:
       界面变量.背景滑动=true;
   texts: ""
 
+任务标题_label:
+  type: "文本"
+  # 任务第一行标题会单独写进这个组件，给左侧导航按钮留位置。
+  x: "任务栏背景.x + 17"
+  y: "任务栏背景.y + 5"
+  width: "任务栏背景.width - 24"
+  height: 10
+  scale: 1
+  visible: 界面变量.展开
+  texts: ""
+
 任务导航按钮:
   type: "图片"
-  x: "任务栏背景.x + 任务栏背景.width - 15"
-  y: "任务栏背景.y + 4"
+  x: "任务栏背景.x + 任务栏背景.width -115"
+  y: "任务栏背景.y + 4.2"
   width: 10
   height: 10
   # 任务栏右上角按钮贴图，这是普通 DragonCore HUD 图片路径。
   texture: "gui/任务栏/导航.png"
+  tip: "&e点击开始导航"
+  # 插件会在玩家没有任务或任务没有导航坐标时动态隐藏该按钮。
   visible: 界面变量.展开
   # XyChemdahShow 导航视觉配置。插件读取后不会把该节点发送给 DragonCore 客户端。
   navigation:
@@ -123,9 +137,10 @@ Functions:
 显示隐藏任务:
   type: "图片"
   x: "任务栏标题背景.x+任务栏标题背景.width-显示隐藏任务.width-1+任务栏标题背景.distanceX"
-  y: "任务栏标题背景.y+2+任务栏标题背景.distanceY"
+  y: "标题_字.Y+0.1"
   width: 20
   height: 9
+  scale: 0.9
   text: "§7收起"
   texture: "255,255,255,0"
   actions:

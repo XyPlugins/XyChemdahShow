@@ -30,8 +30,7 @@ public final class QuestViewRegistry {
         viewByQuestId.clear();
 
         File questFolder = new File(plugin.getDataFolder(), "Quest");
-        if (!questFolder.exists() && !questFolder.mkdirs()) {
-            XyChemdahShow.log(Bukkit.getConsoleSender(), "无法创建 Quest 配置目录");
+        if (!questFolder.exists()) {
             return;
         }
 

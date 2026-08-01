@@ -14,6 +14,7 @@ import ink.ptms.chemdah.core.quest.objective.Objective;
 import ink.ptms.chemdah.core.quest.objective.Progress;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 import xy.xychemdahshow.XyChemdahShow;
 import xy.xychemdahshow.config.PluginSettings;
 import xy.xychemdahshow.config.QuestView;
@@ -38,6 +39,8 @@ public final class HudService {
     private static final String HUD_NAME = "questhud";
     private static final String HUD_PATH = "Gui/questhud.yml";
     private static final String HUD_TEXT_COMPONENT = "任务信息_label";
+    private static final String HUD_TITLE_COMPONENT = "任务标题_label";
+    private static final String HUD_NAVIGATION_BUTTON_COMPONENT = "任务导航按钮";
 
     private final XyChemdahShow plugin;
     private final PluginSettings settings;
@@ -45,6 +48,9 @@ public final class HudService {
     private final ChemdahBridge chemdahBridge;
     private final PlaceholderBridge placeholderBridge;
     private final Set<UUID> openedPlayers = new HashSet<UUID>();
+    private BukkitTask keepAliveTask;
+    private int keepAliveInterval = -1;
+    private boolean keepAliveReopen;
 
     public HudService(
             XyChemdahShow plugin,
@@ -67,6 +73,10 @@ public final class HudService {
     }
 
     public void updateHud(Player player, boolean reopenHud) {
+        updateHud(player, reopenHud, reopenHud);
+    }
+
+    private void updateHud(Player player, boolean resendYaml, boolean forceOpenHud) {
         if (player == null || !player.isOnline()) {
             return;
         }
@@ -97,20 +107,73 @@ public final class HudService {
         }
 
         boolean hasTasks = !lines.isEmpty();
+        boolean hasNavigationTarget = plugin.getNavigationService() != null
+                && plugin.getNavigationService().hasNavigationTarget(player, activeQuests);
+        if (!hasNavigationTarget && plugin.getNavigationService() != null) {
+            plugin.getNavigationService().stopNavigationSilently(player);
+        }
+
         if (!hasTasks && settings.isDeleteHud()) {
-            closeHud(player);
+            if (openedPlayers.contains(player.getUniqueId())) {
+                closeHud(player);
+            }
             return;
         }
 
-        if (reopenHud || !openedPlayers.contains(player.getUniqueId())) {
-            openHud(player, reopenHud);
+        if (forceOpenHud || !openedPlayers.contains(player.getUniqueId())) {
+            openHud(player, resendYaml);
         }
 
-        String text = hasTasks ? Texts.joinLines(lines) : settings.getEmptyText();
-        text = applyInternalVariables(player, text, activeQuests);
-        text = placeholderBridge.apply(player, text);
-        setHudText(player, text);
+        if (hasTitleComponent()) {
+            String titleText = hasTasks ? lines.get(0) : "";
+            String detailText = hasTasks ? (lines.size() > 1 ? Texts.joinLines(lines.subList(1, lines.size())) : "") : settings.getEmptyText();
+            setHudTitle(player, applyDisplayText(player, titleText, activeQuests));
+            setHudText(player, applyDisplayText(player, detailText, activeQuests));
+        } else {
+            String text = hasTasks ? Texts.joinLines(lines) : settings.getEmptyText();
+            setHudText(player, applyDisplayText(player, text, activeQuests));
+        }
+        setNavigationButtonVisible(player, hasTasks && hasNavigationTarget);
         refreshVariableTextComponents(player, activeQuests);
+    }
+
+    public void refreshKeepAliveTask() {
+        if (!settings.isHudKeepAliveEnabled()) {
+            stopKeepAliveTask();
+            return;
+        }
+
+        int interval = settings.getHudKeepAliveInterval();
+        boolean reopen = settings.isHudKeepAliveReopen();
+        if (keepAliveTask != null && keepAliveInterval == interval && keepAliveReopen == reopen) {
+            return;
+        }
+
+        stopKeepAliveTask();
+        keepAliveInterval = interval;
+        keepAliveReopen = reopen;
+        keepAliveTask = Bukkit.getScheduler().runTaskTimer(plugin, new Runnable() {
+            @Override
+            public void run() {
+                runKeepAlive();
+            }
+        }, interval, interval);
+    }
+
+    public void stopKeepAliveTask() {
+        if (keepAliveTask != null) {
+            keepAliveTask.cancel();
+            keepAliveTask = null;
+        }
+        keepAliveInterval = -1;
+        keepAliveReopen = false;
+    }
+
+    private void runKeepAlive() {
+        plugin.getChemdahBridge().refreshProfiles();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            updateHud(player, false, settings.isHudKeepAliveReopen());
+        }
     }
 
     private void openHud(Player player, boolean sendYaml) {
@@ -130,6 +193,22 @@ public final class HudService {
         setComponentText(player, HUD_TEXT_COMPONENT, text);
     }
 
+    private void setHudTitle(Player player, String text) {
+        setComponentText(player, HUD_TITLE_COMPONENT, text);
+    }
+
+    private void setNavigationButtonVisible(Player player, boolean visible) {
+        if (!hasComponent(HUD_NAVIGATION_BUTTON_COMPONENT)) {
+            return;
+        }
+
+        setComponentValue(player, HUD_NAVIGATION_BUTTON_COMPONENT, "visible", visible ? "界面变量.展开" : "false");
+    }
+
+    private boolean hasTitleComponent() {
+        return hasComponent(HUD_TITLE_COMPONENT);
+    }
+
     private void refreshVariableTextComponents(Player player, List<Quest> activeQuests) {
         Map<String, String> templates = settings.getHudVariableTextTemplates();
         if (templates.isEmpty()) {
@@ -138,19 +217,32 @@ public final class HudService {
 
         for (Map.Entry<String, String> entry : templates.entrySet()) {
             String component = entry.getKey();
-            if (!hasText(component) || HUD_TEXT_COMPONENT.equals(component)) {
+            if (!hasText(component) || HUD_TEXT_COMPONENT.equals(component) || HUD_TITLE_COMPONENT.equals(component)) {
                 continue;
             }
 
-            String text = applyInternalVariables(player, entry.getValue(), activeQuests);
-            text = placeholderBridge.apply(player, text);
-            setComponentText(player, component, text);
+            setComponentText(player, component, applyDisplayText(player, entry.getValue(), activeQuests));
         }
     }
 
+    private String applyDisplayText(Player player, String source, List<Quest> activeQuests) {
+        String text = applyInternalVariables(player, source, activeQuests);
+        return placeholderBridge.apply(player, text);
+    }
+
     private void setComponentText(Player player, String component, String text) {
-        String function = "方法.设置组件值('" + Texts.escapeDragonCoreString(component) + "','texts','" + Texts.escapeDragonCoreString(text) + "');";
+        setComponentValue(player, component, "texts", text);
+    }
+
+    private void setComponentValue(Player player, String component, String key, String value) {
+        String function = "方法.设置组件值('" + Texts.escapeDragonCoreString(component) + "','"
+                + Texts.escapeDragonCoreString(key) + "','"
+                + Texts.escapeDragonCoreString(value) + "');";
         PacketSender.sendRunFunction(player, HUD_NAME, function, false);
+    }
+
+    private boolean hasComponent(String component) {
+        return settings.getHudYaml() != null && settings.getHudYaml().contains(component);
     }
 
     private String applyInternalVariables(Player player, String source, List<Quest> quests) {

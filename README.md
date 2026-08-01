@@ -16,12 +16,54 @@
 
 - 玩家进入服务器后自动打开 DragonCore 任务 HUD。
 - 自动读取 Chemdah 玩家身上的实时任务，不需要额外在本插件里登记任务。
+- 新安装时默认只生成 `config.yml` 与 `questhud.yml`，不再生成旧版 `Quest` 示例目录。
 - 显示 Chemdah 任务名与子任务名。
 - 对 Chemdah 计数型子任务显示实时进度，例如 `1/10`。
 - Chemdah 任务接取、推进、完成、失败、重启、重载后自动刷新 HUD。
+- 支持可配置 HUD 保活刷新，缓解 DragonCore 任务栏待久后自动消失或内容丢失的问题。
 - 支持任务导航：Bukkit 粒子路线或 DragonCore 平面箭头路线。
 - 插件提示安装 XyCore 时优先读取 `plugins/XyCore/config.yml -> messages.prefix`，未安装时使用本插件前缀独立运行。
 - 保留奖励配置解析接口，当前轻量版不提供旧版背包奖励预览界面。
+
+## 更新日志
+
+### 1.6.5 - 2026-08-01
+
+- 新增 HUD 保活刷新配置 `hud-keep-alive`，缓解 DragonCore 任务栏待久后自动消失或内容丢失的问题。
+- 玩家没有可导航任务，或任务没有导航坐标时，自动隐藏 `任务导航按钮`。
+- 任务消失、任务完成或导航坐标失效时，自动停止残留导航并清理地面箭头。
+- 玩家导航提示优先使用 XyCore 0.3.11+ 统一前缀 API；XyCore 不可用时回退到本插件前缀。
+- 后台日志、插件重载和管理类提示继续使用 XyChemdahShow 自身前缀。
+- 保活默认每 `100 tick` 轻量刷新一次，不默认重发完整 HUD 配置。
+
+### 1.6.4 - 2026-07-26
+
+- 默认 `questhud.yml` 同步为新版任务栏布局。
+- 保留 `任务导航按钮.tip` 原生悬浮提示。
+- 新安装时不再自动生成旧版 `Quest` 目录和任务示例文件。
+
+### 1.6.3 - 2026-07-26
+
+- 导航启动前检测玩家是否处于目标世界，不在目标世界时提示先传送。
+- 玩家切换到非目标世界时，自动停止导航并清理箭头。
+
+### 1.6.2 - 2026-07-26
+
+- 修复导航按钮 `tip` 配置位置，悬浮提示恢复正常。
+
+### 1.6.1 - 2026-07-26
+
+- 新增任务标题独立组件 `任务标题_label`。
+- 导航按钮移动到任务标题左侧。
+- 结构化任务信息支持类型、地点、目标、详情。
+- 修复旧版 HUD 的兼容显示逻辑。
+
+### 1.6.0 - 2026-07-26
+
+- 新增 DragonCore 平面箭头导航。
+- 新增箭头贴图、间距、刷新频率、旋转、透明度、穿墙和发光配置。
+- 新增上一帧箭头状态缓存，减少重复 WorldTexture 发包。
+- 支持 XyCore 软依赖。
 
 ## 命令
 
@@ -31,7 +73,20 @@
 
 ## HUD 界面配置
 
-界面布局、标题文本、背景、坐标、显示样式全部交给 `questhud.yml` 控制。插件运行时会刷新 `任务信息_label.texts` 里的任务内容，并会按 `questhud.yml` 原模板刷新包含 `%xychemdahshow_` 的文本组件；不再通过 `config.yml` 写死标题内容。
+界面布局、标题文本、背景、坐标、显示样式全部交给 `questhud.yml` 控制。插件运行时会刷新 `任务标题_label.texts` 与 `任务信息_label.texts`；如果旧配置没有 `任务标题_label`，会自动退回旧版整段写入 `任务信息_label` 的模式。
+
+插件会按 `questhud.yml` 原模板刷新包含 `%xychemdahshow_` 的文本组件；不再通过 `config.yml` 写死标题内容。
+
+如果任务栏在客户端待久后自动消失，可在 `config.yml` 调整 HUD 保活：
+
+```yml
+hud-keep-alive:
+  enabled: true
+  interval: 100
+  reopen-hud: false
+```
+
+默认只轻量刷新组件文本、标题变量和导航按钮显示状态，不重发完整 HUD 配置。如果实测 DragonCore 会把整个 HUD 关闭，导致轻量刷新无效，再把 `reopen-hud` 改为 `true`。
 
 ## 内部 HUD 变量
 
@@ -98,6 +153,10 @@ addon:
 
 玩家点击 `questhud.yml` 中的导航按钮后，会执行 `/xychshow nav`。插件会从玩家当前进行中的任务里寻找第一条带 `addon.xychshow.nav` 或 `addon.track` 坐标的任务，并在玩家前方生成指向目标坐标的地面粒子箭头。再次点击会停止导航，进入目标附近会自动停止。
 
+如果玩家不在任务导航坐标对应的世界，插件不会开启路线，会提示玩家先传送到 `addon.xychshow.location` 配置的地点，例如 `§e墨源城`。
+
+当玩家没有正在进行的任务，或当前任务没有可读取的导航坐标时，插件会隐藏 `任务导航按钮`，并静默清理残留的地面箭头。
+
 默认 HUD 已包含导航按钮组件：
 
 ```yml
@@ -109,6 +168,8 @@ addon:
       方法.播放声音;
       方法.聊天('/xychshow nav');
 ```
+
+默认 HUD 会把第一行任务标题单独写入 `任务标题_label`，因此导航按钮可以放在标题左侧，而 `类型/地点/目标/详情` 等内容仍由 `任务信息_label` 单独控制位置。
 
 导航粒子可在 `config.yml` 的 `navigation` 节点调整：
 
@@ -168,16 +229,18 @@ addon:
 
 ## XyCore 前缀
 
-插件玩家聊天提示的前缀规则：
+玩家导航提示使用 XyCore 风格前缀：
 
-- 已安装并启用 XyCore：读取 `plugins/XyCore/config.yml` 的 `messages.prefix`。
+- 已安装并启用 XyCore 0.3.11+：通过 XyCore 统一前缀 API 读取 `messages.prefix`。
 - 未安装、未启用或旧版 XyCore 无法提供前缀API：使用本插件 `config.yml -> messages.prefix`，默认 `&7[&bXyChemdahShow&7]&r `。
 
-XyCore 是软依赖，不会影响 XyChemdahShow 独立运行。控制台日志继续保留XyChemdahShow插件名，方便定位任务HUD和导航问题。
+后台日志、插件重载和管理类提示仍使用 XyChemdahShow 自身前缀。XyCore 是软依赖，不会影响 XyChemdahShow 独立运行。
 
 ## 性能说明
 
 插件不做每 tick 轮询。HUD 刷新由玩家进服、手动刷新、Chemdah 任务事件与 Chemdah 重载事件触发。普通刷新使用 `huddelay`，进度推进刷新使用 `progress-refresh-delay`。同一个玩家在刷新延迟内连续触发多次同类事件时，只会排队一次 HUD 刷新，避免击杀、挖掘等高频任务造成重复刷新。
+
+HUD 保活刷新由 `hud-keep-alive.interval` 控制，默认 `100 tick`。默认模式只刷新文本、变量和按钮显隐；`reopen-hud: true` 会额外重新打开 HUD，建议仅在轻量保活无法恢复客户端显示时启用。
 
 导航仅对正在导航的玩家运行。粒子路线使用 `navigation.particle-interval`，DragonCore 箭头路线使用 `dragoncore-arrow.update-interval`。DragonCore 箭头会缓存上一帧的贴图位置与参数；玩家不动、箭头未变化时不会重复发送同一批 WorldTexture 更新包。
 

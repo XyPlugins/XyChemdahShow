@@ -9,6 +9,18 @@ messages:
 # HUD 普通刷新延迟，20 tick = 1 秒。
 huddelay: 30
 
+# HUD 保活刷新。
+# 用于处理 DragonCore 任务栏待久后文本/视图被客户端清掉，手动刷新后又恢复的问题。
+hud-keep-alive:
+  # 是否开启保活。开启后插件会定期轻量刷新任务文本、标题变量和导航按钮显示状态。
+  enabled: true
+  # 保活刷新间隔，20 tick = 1 秒。建议 100-200，太低会增加 DragonCore 发包频率。
+  interval: 100
+  # 是否每次保活都重新打开 HUD。
+  # 默认 false：只刷新组件文本和按钮状态，性能更稳，也不会强制展开玩家收起的任务栏。
+  # 如果实测 DragonCore 会把整个 HUD 关闭，导致轻量刷新无效，再改为 true。
+  reopen-hud: false
+
 # 任务进度推进刷新延迟。击杀、挖掘等实时进度建议保持较低。
 progress-refresh-delay: 3
 

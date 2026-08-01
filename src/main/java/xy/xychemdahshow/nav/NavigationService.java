@@ -41,7 +41,7 @@ public final class NavigationService {
             return;
         }
         if (!plugin.getSettings().isNavigationEnabled()) {
-            XyChemdahShow.log(player, "导航功能当前未启用");
+            XyChemdahShow.playerLog(player, "导航功能当前未启用");
             return;
         }
 
@@ -53,22 +53,34 @@ public final class NavigationService {
 
         NavigationTarget target = findFirstTarget(player);
         if (target == null) {
-            XyChemdahShow.log(player, "当前没有可导航的任务");
+            XyChemdahShow.playerLog(player, "当前没有可导航的任务");
             return;
         }
 
         World world = Bukkit.getWorld(target.getWorld());
         if (world == null) {
-            XyChemdahShow.log(player, "导航目标世界不存在: " + target.getWorld());
+            XyChemdahShow.playerLog(player, "导航目标世界不存在: " + target.getWorld());
+            return;
+        }
+        if (!player.getWorld().equals(world)) {
+            XyChemdahShow.playerLog(player, "请先传送到 " + target.getQuestName() + " &f后再开启导航");
             return;
         }
 
         navigatingPlayers.put(uniqueId, target);
         ensureTask();
-        XyChemdahShow.log(player, "已开始导航: " + target.getQuestName());
+        XyChemdahShow.playerLog(player, "正在导航: " + target.getQuestName());
     }
 
     public void stopNavigation(Player player) {
+        stopNavigation(player, true);
+    }
+
+    public void stopNavigationSilently(Player player) {
+        stopNavigation(player, false);
+    }
+
+    private void stopNavigation(Player player, boolean notify) {
         if (player == null) {
             return;
         }
@@ -76,9 +88,29 @@ public final class NavigationService {
         NavigationTarget removed = navigatingPlayers.remove(player.getUniqueId());
         if (removed != null) {
             clearDragonCoreArrows(player);
-            XyChemdahShow.log(player, "已停止导航");
+            if (notify) {
+                XyChemdahShow.playerLog(player, "已停止导航");
+            }
         }
         stopTaskIfIdle();
+    }
+
+    public boolean hasNavigationTarget(Player player, List<Quest> quests) {
+        if (player == null || !plugin.getSettings().isNavigationEnabled()) {
+            return false;
+        }
+
+        List<Quest> source = quests;
+        if (source == null) {
+            source = plugin.getChemdahBridge().getActiveQuests(player);
+        }
+
+        for (Quest quest : source) {
+            if (getTarget(player, quest) != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void stopAll() {
@@ -165,8 +197,16 @@ public final class NavigationService {
 
             NavigationTarget target = entry.getValue();
             World world = Bukkit.getWorld(target.getWorld());
-            if (world == null || !player.getWorld().equals(world)) {
+            if (world == null) {
                 clearDragonCoreArrows(player);
+                iterator.remove();
+                XyChemdahShow.playerLog(player, "导航目标世界不存在: " + target.getWorld());
+                continue;
+            }
+            if (!player.getWorld().equals(world)) {
+                clearDragonCoreArrows(player);
+                iterator.remove();
+                XyChemdahShow.playerLog(player, "请先传送到 " + target.getQuestName() + " &f后再开启导航");
                 continue;
             }
 
@@ -177,7 +217,7 @@ public final class NavigationService {
             if ((dx * dx + dz * dz) <= arriveDistance * arriveDistance) {
                 iterator.remove();
                 clearDragonCoreArrows(player);
-                XyChemdahShow.log(player, "已到达导航目标: " + target.getQuestName());
+                XyChemdahShow.playerLog(player, "已到达导航目标: " + target.getQuestName());
                 continue;
             }
 
@@ -496,7 +536,12 @@ public final class NavigationService {
             world = player.getWorld().getName();
         }
 
-        return new NavigationTarget(quest.getId(), getQuestDisplayName(quest), world, x, y, z);
+        String navigationName = getConfigString(template, "addon.xychshow.location");
+        if (navigationName.trim().isEmpty()) {
+            navigationName = getQuestDisplayName(quest);
+        }
+        navigationName = XyChemdahShow.color(navigationName);
+        return new NavigationTarget(quest.getId(), navigationName, world, x, y, z);
     }
 
     private String getConfigString(QuestContainer container, String path) {
