@@ -2,7 +2,7 @@
 
 ## 安装
 
-1. 将 `XyChemdahShow-1.6.0.jar` 放入服务器 `plugins` 目录。
+1. 将 `XyChemdahShow-1.6.1.jar` 放入服务器 `plugins` 目录。
 2. 确认服务器已安装 DragonCore 与 Chemdah。
 3. 可选安装 PlaceholderAPI 与 XyCore。
 4. 启动服务器生成 `plugins/XyChemdahShow/config.yml` 与 `questhud.yml`。
@@ -97,4 +97,4 @@ navigation:
 
 ## XyCore 前缀
 
-安装 XyCore 时，插件提示会读取 `plugins/XyCore/config.yml -> messages.prefix`。未安装 XyCore 时使用默认 `&7[&bXyCore&7]&r`，不会影响插件启动。
+安装 XyCore 0.3.11+ 时，插件玩家聊天提示会读取 `plugins/XyCore/config.yml -> messages.prefix`。未安装、未启用或旧版 XyCore 不可用时，使用本插件 `config.yml -> messages.prefix`，默认 `&7[&bXyChemdahShow&7]&r `，不会影响插件启动。

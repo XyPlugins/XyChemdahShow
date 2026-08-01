@@ -3,6 +3,7 @@ package xy.xychemdahshow;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import xy.xychemdahshow.command.MainCommand;
@@ -18,7 +19,7 @@ import java.io.File;
 
 public final class XyChemdahShow extends JavaPlugin {
 
-    private static final String DEFAULT_XYCORE_PREFIX = "&7[&bXyCore&7]&r";
+    private static final String DEFAULT_LOCAL_PREFIX = "&7[&bXyChemdahShow&7]&r ";
 
     private PluginSettings settings;
     private QuestViewRegistry questViews;
@@ -90,7 +91,8 @@ public final class XyChemdahShow extends JavaPlugin {
     }
 
     public static void log(CommandSender sender, String message) {
-        sender.sendMessage(color(getUnifiedPrefix() + "&f" + message));
+        String prefix = sender instanceof Player ? getUnifiedPrefix() : getLocalPrefix();
+        sender.sendMessage(color(prefix + "&f" + message));
     }
 
     public static String getMessagePrefix() {
@@ -104,17 +106,34 @@ public final class XyChemdahShow extends JavaPlugin {
     private static String getUnifiedPrefix() {
         String prefix = getXyCorePrefix();
         if (prefix == null || prefix.trim().isEmpty()) {
-            prefix = DEFAULT_XYCORE_PREFIX;
+            prefix = getLocalPrefix();
         }
-        return prefix.endsWith(" ") ? prefix : prefix + " ";
+        return prefix;
     }
 
     private static String getXyCorePrefix() {
         Plugin core = Bukkit.getPluginManager().getPlugin("XyCore");
-        if (!(core instanceof JavaPlugin) || !core.isEnabled()) {
+        if (core == null || !core.isEnabled()) {
             return null;
         }
-        return ((JavaPlugin) core).getConfig().getString("messages.prefix", DEFAULT_XYCORE_PREFIX);
+        try {
+            ClassLoader loader = core.getClass().getClassLoader();
+            Class<?> entry = Class.forName("org.xyplugin.xycore.api.XyCore", true, loader);
+            Object api = entry.getMethod("get").invoke(null);
+            Object prefix = api.getClass().getMethod("getMessagePrefix").invoke(api);
+            return prefix == null ? "" : String.valueOf(prefix);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private static String getLocalPrefix() {
+        try {
+            return JavaPlugin.getPlugin(XyChemdahShow.class).getConfig()
+                    .getString("messages.prefix", DEFAULT_LOCAL_PREFIX);
+        } catch (IllegalStateException ignored) {
+            return DEFAULT_LOCAL_PREFIX;
+        }
     }
 
     private void saveDefaultFiles() {

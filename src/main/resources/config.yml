@@ -2,6 +2,10 @@
 # 关闭后玩家执行 /xychshow nav 会提示导航未启用。
 navigation-enabled: true
 
+messages:
+  # 独立运行时使用本前缀；检测到 XyCore 时，玩家聊天提示优先使用 XyCore config.yml -> messages.prefix。
+  prefix: '&7[&bXyChemdahShow&7]&r '
+
 # HUD 普通刷新延迟，20 tick = 1 秒。
 huddelay: 30
 

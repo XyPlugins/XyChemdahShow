@@ -282,6 +282,24 @@
 - 已进行 Java 编译验证与 jar 内容检查。
 - 运行期需在服务器中确认：`update-interval: 2` 下箭头移动观感更顺滑；若在线导航人数较多，可测试调到 `3` 或 `4`。
 
+## 2026-08-02 / 1.6.1
+
+### 使用目标
+
+- 协助落实服主确认的Xy系列玩家聊天前缀规则。
+- 让XyChemdahShow在安装XyCore时统一显示Core前缀，未安装时保留自己的插件前缀。
+
+### 使用方式
+
+- AI辅助调整 `XyChemdahShow.log`：玩家消息使用统一前缀，控制台消息使用本地前缀。
+- AI辅助改为通过反射读取XyCore `getMessagePrefix()`，保持XyCore软依赖，不将Core打入插件。
+- AI辅助将命令帮助中直接发送的聊天行改为走统一日志/消息入口。
+- AI辅助同步更新README、USAGE、CHANGELOG、默认配置注释和版本号。
+
+### 验证记录
+
+- 已进行Java编译验证；运行期需在服务器分别确认有XyCore和无XyCore两种情况下的前缀显示。
+
 ## 2026-07-26 / 1.6.0
 
 ### 使用目标
@@ -294,7 +312,7 @@
 ### 使用方式
 
 - 由开发者提供最新 `questhud.yml`，默认启用 `dragoncore-arrow` 平面箭头导航。
-- AI 辅助将 XyCore 作为软依赖读取：优先使用 `plugins/XyCore/config.yml -> messages.prefix`，未安装时使用同款默认前缀。
+- AI 辅助将 XyCore 作为软依赖读取；1.6.1起未安装XyCore时改为使用本插件本地前缀。
 - AI 辅助为 `任务导航按钮.navigation.dragoncore-arrow` 中贴图、大小、间距、最大数量、刷新间隔、旋转、透明度、穿墙和发光配置补充中文注释。
 - AI 辅助检查性能热点：导航定时器、WorldTexture 发包、贴地搜索方块检查、HUD 刷新队列。
 - AI 辅助新增 DragonCore 箭头渲染状态缓存，避免玩家不移动时重复发送完全相同的箭头贴图更新。

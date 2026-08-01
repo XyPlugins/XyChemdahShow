@@ -10,7 +10,7 @@
 
 可选依赖：
 - PlaceholderAPI
-- XyCore（用于统一读取 `messages.prefix` 插件消息前缀；未安装时会使用同款默认前缀兜底）
+- XyCore（用于统一读取 `messages.prefix` 插件消息前缀；未安装时使用XyChemdahShow自己的本地前缀兜底）
 
 ## 功能范围
 
@@ -20,7 +20,7 @@
 - 对 Chemdah 计数型子任务显示实时进度，例如 `1/10`。
 - Chemdah 任务接取、推进、完成、失败、重启、重载后自动刷新 HUD。
 - 支持任务导航：Bukkit 粒子路线或 DragonCore 平面箭头路线。
-- 插件提示统一使用 XyCore 风格前缀，安装 XyCore 时优先读取 `plugins/XyCore/config.yml -> messages.prefix`。
+- 插件提示安装 XyCore 时优先读取 `plugins/XyCore/config.yml -> messages.prefix`，未安装时使用本插件前缀独立运行。
 - 保留奖励配置解析接口，当前轻量版不提供旧版背包奖励预览界面。
 
 ## 命令
@@ -168,12 +168,12 @@ addon:
 
 ## XyCore 前缀
 
-插件消息统一使用 XyCore 风格前缀：
+插件玩家聊天提示的前缀规则：
 
 - 已安装并启用 XyCore：读取 `plugins/XyCore/config.yml` 的 `messages.prefix`。
-- 未安装 XyCore：使用默认 `&7[&bXyCore&7]&r`。
+- 未安装、未启用或旧版 XyCore 无法提供前缀API：使用本插件 `config.yml -> messages.prefix`，默认 `&7[&bXyChemdahShow&7]&r `。
 
-XyCore 是软依赖，不会影响 XyChemdahShow 独立运行。
+XyCore 是软依赖，不会影响 XyChemdahShow 独立运行。控制台日志继续保留XyChemdahShow插件名，方便定位任务HUD和导航问题。
 
 ## 性能说明
 

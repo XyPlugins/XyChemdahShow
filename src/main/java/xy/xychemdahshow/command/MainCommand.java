@@ -81,10 +81,10 @@ public final class MainCommand implements CommandExecutor, TabCompleter {
 
     private void sendHelp(CommandSender sender) {
         XyChemdahShow.log(sender, "XyChemdahShow 命令帮助");
-        sender.sendMessage(XyChemdahShow.color("&6/xychshow refresh &f- 刷新自己的任务 HUD"));
-        sender.sendMessage(XyChemdahShow.color("&6/xychshow nav &f- 开始或停止当前任务导航"));
+        XyChemdahShow.log(sender, "&6/xychshow refresh &f- 刷新自己的任务 HUD");
+        XyChemdahShow.log(sender, "&6/xychshow nav &f- 开始或停止当前任务导航");
         if (sender.hasPermission("xychemdahshow.admin")) {
-            sender.sendMessage(XyChemdahShow.color("&6/xychshow reload &f- 重载配置并刷新在线玩家"));
+            XyChemdahShow.log(sender, "&6/xychshow reload &f- 重载配置并刷新在线玩家");
         }
     }
 }
