@@ -2,15 +2,21 @@
 
 ## 1.6.6 - 2026-08-02
 
+### 新增
+
+- 默认 `questhud.yml` 新增 `空任务_label` 组件，用于单独显示无任务提示。
+
 ### 调整
 
 - 基于 GitHub 最新 `1.6.5` 代码确认并保留最终前缀语义。
 - 玩家导航提示使用 XyCore `messages.prefix`，未安装 XyCore 时回退本插件前缀。
 - `/xychshow help/refresh/reload` 的管理反馈、权限不足、只能玩家执行、后台日志和配置加载提示继续使用 XyChemdahShow 本地前缀。
+- 当 HUD 配置存在 `空任务_label` 时，玩家没有任务时会将 `config.yml -> empty-text` 写入该组件，并清空 `任务标题_label` 与 `任务信息_label`。
+- `空任务_label` 的位置、字号、居中方式完全交给 `questhud.yml` 控制；旧 HUD 没有该组件时仍回退到原来的 `任务信息_label` 显示方式。
 
 ### 验证
 
-- 已执行 `gradlew.bat compileJava --no-daemon` 通过；Chemdah/Kotlin 依赖注解警告不影响构建。
+- 已执行 `gradlew.bat clean build` 通过；Chemdah/Kotlin 依赖注解警告不影响构建。
 
 ## 1.6.5 - 2026-08-01
 

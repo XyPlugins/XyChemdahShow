@@ -6,16 +6,21 @@
 
 - 根据服主要求，以 GitHub 最新 `XyChemdahShow 1.6.5` 为基础确认最终前缀语义。
 - 保留玩家导航提示走 XyCore，管理/帮助/报错和后台日志走 XyChemdahShow。
+- 协助将无任务提示从 `任务信息_label` 拆分为独立 `空任务_label` 组件。
+- 保持旧版 HUD 兼容：未配置 `空任务_label` 时仍使用原逻辑显示 `empty-text`。
 
 ### 使用方式
 
 - AI 辅助同步最新源码后检查 `XyChemdahShow.log` 与 `playerLog` 两个入口。
 - 确认 `NavigationService` 使用 `playerLog`，`MainCommand`、配置加载、插件启动/卸载使用 `log`。
-- 本次不改变 HUD 保活、导航按钮隐藏、地面箭头清理和 Chemdah 事件刷新逻辑。
+- AI 辅助检查开发者提供的新版 `questhud.yml` 与 `HudService` 写入逻辑。
+- AI 辅助在默认 HUD 和开发者提供的外部 HUD 中加入居中的 `空任务_label`。
+- AI 辅助调整 HUD 刷新逻辑：有任务时隐藏空任务组件，无任务时清空任务标题/内容并显示空任务组件。
 
 ### 验证记录
 
-- 已执行 `gradlew.bat compileJava --no-daemon` 通过；构建阶段的 Kotlin 注解警告来自依赖，不影响 Java 编译。
+- 已执行 `gradlew.bat clean build` 通过；构建阶段的 Kotlin 注解警告来自依赖，不影响 Java 编译。
+- 运行期需在 DragonCore + Chemdah 环境中确认：无任务时提示位于任务栏背景中央，有任务时该提示隐藏。
 
 ## 2026-08-01 / 1.6.5
 

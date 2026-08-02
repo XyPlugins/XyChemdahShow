@@ -40,6 +40,7 @@ public final class HudService {
     private static final String HUD_PATH = "Gui/questhud.yml";
     private static final String HUD_TEXT_COMPONENT = "任务信息_label";
     private static final String HUD_TITLE_COMPONENT = "任务标题_label";
+    private static final String HUD_EMPTY_COMPONENT = "空任务_label";
     private static final String HUD_NAVIGATION_BUTTON_COMPONENT = "任务导航按钮";
 
     private final XyChemdahShow plugin;
@@ -126,13 +127,15 @@ public final class HudService {
 
         if (hasTitleComponent()) {
             String titleText = hasTasks ? lines.get(0) : "";
-            String detailText = hasTasks ? (lines.size() > 1 ? Texts.joinLines(lines.subList(1, lines.size())) : "") : settings.getEmptyText();
+            String detailText = hasTasks ? (lines.size() > 1 ? Texts.joinLines(lines.subList(1, lines.size())) : "") : getEmptyFallbackText();
             setHudTitle(player, applyDisplayText(player, titleText, activeQuests));
             setHudText(player, applyDisplayText(player, detailText, activeQuests));
         } else {
-            String text = hasTasks ? Texts.joinLines(lines) : settings.getEmptyText();
+            String text = hasTasks ? Texts.joinLines(lines) : getEmptyFallbackText();
             setHudText(player, applyDisplayText(player, text, activeQuests));
         }
+        setEmptyText(player, hasTasks ? "" : applyDisplayText(player, settings.getEmptyText(), activeQuests));
+        setEmptyTextVisible(player, !hasTasks);
         setNavigationButtonVisible(player, hasTasks && hasNavigationTarget);
         refreshVariableTextComponents(player, activeQuests);
     }
@@ -197,12 +200,36 @@ public final class HudService {
         setComponentText(player, HUD_TITLE_COMPONENT, text);
     }
 
+    private void setEmptyText(Player player, String text) {
+        if (!hasEmptyComponent()) {
+            return;
+        }
+
+        setComponentText(player, HUD_EMPTY_COMPONENT, text);
+    }
+
+    private void setEmptyTextVisible(Player player, boolean visible) {
+        if (!hasEmptyComponent()) {
+            return;
+        }
+
+        setComponentValue(player, HUD_EMPTY_COMPONENT, "visible", visible ? "界面变量.展开" : "false");
+    }
+
     private void setNavigationButtonVisible(Player player, boolean visible) {
         if (!hasComponent(HUD_NAVIGATION_BUTTON_COMPONENT)) {
             return;
         }
 
         setComponentValue(player, HUD_NAVIGATION_BUTTON_COMPONENT, "visible", visible ? "界面变量.展开" : "false");
+    }
+
+    private String getEmptyFallbackText() {
+        return hasEmptyComponent() ? "" : settings.getEmptyText();
+    }
+
+    private boolean hasEmptyComponent() {
+        return hasComponent(HUD_EMPTY_COMPONENT);
     }
 
     private boolean hasTitleComponent() {

@@ -80,6 +80,22 @@ hud-keep-alive:
 
 默认每 100 tick 轻量刷新一次任务文本、标题变量和导航按钮显示状态。`reopen-hud` 默认关闭，避免频繁重新打开 HUD 影响玩家收起状态；如果轻量刷新仍无法恢复显示，再改为 `true` 测试。
 
+## 空任务提示
+
+默认 `questhud.yml` 包含 `空任务_label`：
+
+```yml
+空任务_label:
+  type: "文本"
+  x: "任务栏背景.x + 任务栏背景.width / 2"
+  y: "任务栏背景.y + 任务栏背景.height / 2 - 4"
+  center: true
+  visible: false
+  texts: ""
+```
+
+玩家没有正在进行的任务时，插件会把 `config.yml -> empty-text` 写入该组件；有任务时会自动隐藏。位置、字号和居中方式都可以直接在 `questhud.yml` 调整。
+
 ## DragonCore 箭头导航
 
 默认配置位于 `questhud.yml -> 任务导航按钮.navigation`：
@@ -108,6 +124,7 @@ navigation:
 
 - `任务标题_label`：显示任务第一行标题，例如 `[主线] 初入浮世`。
 - `任务信息_label`：显示类型、地点、目标、详情等内容。
+- `空任务_label`：无任务时显示 `config.yml -> empty-text`。
 - `任务导航按钮`：固定在标题左侧。
 - `任务导航按钮.tip`：鼠标悬停导航按钮时显示的 DragonCore 原生提示。
 

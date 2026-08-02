@@ -79,6 +79,19 @@ Functions:
   visible: 界面变量.展开
   texts: ""
 
+空任务_label:
+  type: "文本"
+  # 玩家没有正在进行的任务时，插件会把 config.yml 的 empty-text 写入这里。
+  # 位置按任务栏背景上下左右居中，可直接在 questhud.yml 调整。
+  x: "任务栏背景.x + 任务栏背景.width / 2"
+  y: "任务栏背景.y + 任务栏背景.height / 2 - 4"
+  width: "任务栏背景.width"
+  height: 10
+  center: true
+  scale: 0.9
+  visible: false
+  texts: ""
+
 任务导航按钮:
   type: "图片"
   x: "任务栏背景.x + 任务栏背景.width -115"
