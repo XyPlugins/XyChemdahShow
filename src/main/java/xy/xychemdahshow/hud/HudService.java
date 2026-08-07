@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -42,6 +43,8 @@ public final class HudService {
     private static final String HUD_TITLE_COMPONENT = "任务标题_label";
     private static final String HUD_EMPTY_COMPONENT = "空任务_label";
     private static final String HUD_NAVIGATION_BUTTON_COMPONENT = "任务导航按钮";
+    private static final int MAX_NAVIGATION_BUTTONS = 8;
+    private static final String NAVIGATION_TITLE_INDENT = "   ";
 
     private final XyChemdahShow plugin;
     private final PluginSettings settings;
@@ -49,6 +52,7 @@ public final class HudService {
     private final ChemdahBridge chemdahBridge;
     private final PlaceholderBridge placeholderBridge;
     private final Set<UUID> openedPlayers = new HashSet<UUID>();
+    private final Map<UUID, List<String>> displayedQuestIds = new HashMap<UUID, List<String>>();
     private BukkitTask keepAliveTask;
     private int keepAliveInterval = -1;
     private boolean keepAliveReopen;
@@ -91,25 +95,44 @@ public final class HudService {
         });
 
         List<String> lines = new ArrayList<String>();
+        List<QuestDisplay> displayedQuests = new ArrayList<QuestDisplay>();
 
         for (Quest quest : activeQuests) {
             if (quest == null) {
                 continue;
             }
 
+            List<String> questLines = new ArrayList<String>();
             QuestView view = questViews.getView(quest.getId());
             if (view == null) {
-                addAutomaticQuestLines(lines, quest);
+                addAutomaticQuestLines(questLines, quest);
+            } else {
+                questLines.add(view.getName());
+                questLines.addAll(view.getText());
+            }
+
+            if (questLines.isEmpty()) {
                 continue;
             }
 
-            lines.add(view.getName());
-            lines.addAll(view.getText());
+            int buttonIndex = displayedQuests.size();
+            int titleLineIndex = lines.size();
+            boolean navigable = plugin.getNavigationService() != null
+                    && plugin.getNavigationService().hasNavigationTarget(player, Collections.singletonList(quest));
+            boolean titleSharesTextComponent = buttonIndex > 0 || !hasTitleComponent();
+            if (titleSharesTextComponent && buttonIndex < MAX_NAVIGATION_BUTTONS
+                    && navigable && hasComponent(getNavigationButtonComponent(buttonIndex))) {
+                questLines.set(0, NAVIGATION_TITLE_INDENT + questLines.get(0));
+            }
+
+            lines.addAll(questLines);
+            displayedQuests.add(new QuestDisplay(quest.getId(), titleLineIndex, navigable));
         }
 
+        rememberDisplayedQuests(player, displayedQuests);
+
         boolean hasTasks = !lines.isEmpty();
-        boolean hasNavigationTarget = plugin.getNavigationService() != null
-                && plugin.getNavigationService().hasNavigationTarget(player, activeQuests);
+        boolean hasNavigationTarget = hasNavigationTarget(displayedQuests);
         if (!hasNavigationTarget && plugin.getNavigationService() != null) {
             plugin.getNavigationService().stopNavigationSilently(player);
         }
@@ -136,8 +159,29 @@ public final class HudService {
         }
         setEmptyText(player, hasTasks ? "" : applyDisplayText(player, settings.getEmptyText(), activeQuests));
         setEmptyTextVisible(player, !hasTasks);
-        setNavigationButtonVisible(player, hasTasks && hasNavigationTarget);
+        refreshNavigationButtons(player, displayedQuests);
         refreshVariableTextComponents(player, activeQuests);
+    }
+
+    public String getDisplayedQuestId(Player player, int displayIndex) {
+        if (player == null || displayIndex < 0) {
+            return null;
+        }
+
+        List<String> questIds = displayedQuestIds.get(player.getUniqueId());
+        if (questIds == null || displayIndex >= questIds.size()) {
+            return null;
+        }
+        return questIds.get(displayIndex);
+    }
+
+    public void forgetPlayer(Player player) {
+        if (player == null) {
+            return;
+        }
+        UUID uniqueId = player.getUniqueId();
+        openedPlayers.remove(uniqueId);
+        displayedQuestIds.remove(uniqueId);
     }
 
     public void refreshKeepAliveTask() {
@@ -216,12 +260,52 @@ public final class HudService {
         setComponentValue(player, HUD_EMPTY_COMPONENT, "visible", visible ? "界面变量.展开" : "false");
     }
 
-    private void setNavigationButtonVisible(Player player, boolean visible) {
-        if (!hasComponent(HUD_NAVIGATION_BUTTON_COMPONENT)) {
-            return;
-        }
+    private void refreshNavigationButtons(Player player, List<QuestDisplay> displayedQuests) {
+        boolean separateTitle = hasTitleComponent();
+        StringBuilder function = new StringBuilder();
+        for (int buttonIndex = 0; buttonIndex < MAX_NAVIGATION_BUTTONS; buttonIndex++) {
+            String component = getNavigationButtonComponent(buttonIndex);
+            if (!hasComponent(component)) {
+                continue;
+            }
 
-        setComponentValue(player, HUD_NAVIGATION_BUTTON_COMPONENT, "visible", visible ? "界面变量.展开" : "false");
+            QuestDisplay display = buttonIndex < displayedQuests.size() ? displayedQuests.get(buttonIndex) : null;
+            boolean visible = display != null && display.navigable;
+            if (display != null && (buttonIndex > 0 || !separateTitle)) {
+                int textLineIndex = display.titleLineIndex - (separateTitle ? 1 : 0);
+                if (textLineIndex >= 0) {
+                    String y = "任务信息_label.y + " + textLineIndex + " * 10 * 任务信息_label.scale - 0.8";
+                    appendComponentValue(function, component, "y", y);
+                }
+            }
+            appendComponentValue(function, component, "visible", visible ? "界面变量.展开" : "false");
+        }
+        if (function.length() > 0) {
+            PacketSender.sendRunFunction(player, HUD_NAME, function.toString(), false);
+        }
+    }
+
+    private String getNavigationButtonComponent(int buttonIndex) {
+        return buttonIndex == 0
+                ? HUD_NAVIGATION_BUTTON_COMPONENT
+                : HUD_NAVIGATION_BUTTON_COMPONENT + "_" + (buttonIndex + 1);
+    }
+
+    private boolean hasNavigationTarget(List<QuestDisplay> displayedQuests) {
+        for (QuestDisplay display : displayedQuests) {
+            if (display.navigable) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void rememberDisplayedQuests(Player player, List<QuestDisplay> displayedQuests) {
+        List<String> questIds = new ArrayList<String>();
+        for (QuestDisplay display : displayedQuests) {
+            questIds.add(display.questId);
+        }
+        displayedQuestIds.put(player.getUniqueId(), questIds);
     }
 
     private String getEmptyFallbackText() {
@@ -262,10 +346,19 @@ public final class HudService {
     }
 
     private void setComponentValue(Player player, String component, String key, String value) {
-        String function = "方法.设置组件值('" + Texts.escapeDragonCoreString(component) + "','"
-                + Texts.escapeDragonCoreString(key) + "','"
-                + Texts.escapeDragonCoreString(value) + "');";
-        PacketSender.sendRunFunction(player, HUD_NAME, function, false);
+        StringBuilder function = new StringBuilder();
+        appendComponentValue(function, component, key, value);
+        PacketSender.sendRunFunction(player, HUD_NAME, function.toString(), false);
+    }
+
+    private void appendComponentValue(StringBuilder function, String component, String key, String value) {
+        function.append("方法.设置组件值('")
+                .append(Texts.escapeDragonCoreString(component))
+                .append("','")
+                .append(Texts.escapeDragonCoreString(key))
+                .append("','")
+                .append(Texts.escapeDragonCoreString(value))
+                .append("');");
     }
 
     private boolean hasComponent(String component) {
@@ -662,6 +755,19 @@ public final class HudService {
         private TaskProgress(double current, double target) {
             this.current = current;
             this.target = target;
+        }
+    }
+
+    private static final class QuestDisplay {
+
+        private final String questId;
+        private final int titleLineIndex;
+        private final boolean navigable;
+
+        private QuestDisplay(String questId, int titleLineIndex, boolean navigable) {
+            this.questId = questId;
+            this.titleLineIndex = titleLineIndex;
+            this.navigable = navigable;
         }
     }
 }

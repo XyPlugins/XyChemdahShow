@@ -16,10 +16,11 @@ hud-keep-alive:
   enabled: true
   # 保活刷新间隔，20 tick = 1 秒。建议 100-200，太低会增加 DragonCore 发包频率。
   interval: 100
-  # 是否每次保活都重新打开 HUD。
-  # 默认 false：只刷新组件文本和按钮状态，性能更稳，也不会强制展开玩家收起的任务栏。
-  # 如果实测 DragonCore 会把整个 HUD 关闭，导致轻量刷新无效，再改为 true。
-  reopen-hud: false
+  # 是否每次保活都发送一次 HUD 恢复包。
+  # 默认 true：DragonCore 可能在玩家长时间无操作后回收 HUD，只刷新组件值无法恢复整个界面。
+  # 这里不会重发 questhud.yml，因此不会重置玩家拖动后保存的位置。
+  # 如果不希望保活时恢复被玩家手动收起的 HUD，可以改为 false。
+  reopen-hud: true
 
 # 任务进度推进刷新延迟。击杀、挖掘等实时进度建议保持较低。
 progress-refresh-delay: 3
@@ -54,7 +55,7 @@ structured-labels:
   target: '目标'
   detail: '详情'
 
-# 任务导航功能。任务中配置 addon.xychshow.nav 或 addon.track 坐标后，玩家可通过 /xychshow nav 开始或停止导航。
+# 任务导航功能。任务中配置 addon.xychshow.nav 或 addon.track 坐标后，玩家可通过任务按钮开始、切换或停止导航。
 # DragonCore 平面箭头贴图的视觉配置位于 questhud.yml 的 任务导航按钮.navigation 下。
 navigation:
   # 导航粒子刷新频率，20 tick = 1 秒。

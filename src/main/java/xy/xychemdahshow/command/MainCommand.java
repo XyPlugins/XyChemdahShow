@@ -51,7 +51,26 @@ public final class MainCommand implements CommandExecutor, TabCompleter {
                 XyChemdahShow.log(sender, "该命令只能由玩家执行");
                 return true;
             }
-            plugin.getNavigationService().toggleNavigation((Player) sender);
+            Player player = (Player) sender;
+            if (args.length >= 2) {
+                int displayIndex;
+                try {
+                    displayIndex = Integer.parseInt(args[1]) - 1;
+                } catch (NumberFormatException ignored) {
+                    XyChemdahShow.playerLog(player, "任务导航序号无效，请刷新任务视图后重试");
+                    return true;
+                }
+
+                String questId = plugin.getHudService().getDisplayedQuestId(player, displayIndex);
+                if (questId == null) {
+                    XyChemdahShow.playerLog(player, "该任务已不在当前视图中，请刷新后重试");
+                    return true;
+                }
+                plugin.getNavigationService().toggleNavigation(player, questId);
+                return true;
+            }
+
+            plugin.getNavigationService().toggleNavigation(player);
             return true;
         }
 
@@ -82,7 +101,7 @@ public final class MainCommand implements CommandExecutor, TabCompleter {
     private void sendHelp(CommandSender sender) {
         XyChemdahShow.log(sender, "XyChemdahShow 命令帮助");
         XyChemdahShow.log(sender, "&6/xychshow refresh &f- 刷新自己的任务 HUD");
-        XyChemdahShow.log(sender, "&6/xychshow nav &f- 开始或停止当前任务导航");
+        XyChemdahShow.log(sender, "&6/xychshow nav [任务序号] &f- 开始、切换或停止任务导航");
         if (sender.hasPermission("xychemdahshow.admin")) {
             XyChemdahShow.log(sender, "&6/xychshow reload &f- 重载配置并刷新在线玩家");
         }

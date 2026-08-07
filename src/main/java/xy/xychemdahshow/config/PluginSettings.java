@@ -70,7 +70,7 @@ public final class PluginSettings {
         hudDelay = Math.max(0, config.getInt("huddelay", 30));
         hudKeepAliveEnabled = config.getBoolean("hud-keep-alive.enabled", true);
         hudKeepAliveInterval = Math.max(20, config.getInt("hud-keep-alive.interval", 100));
-        hudKeepAliveReopen = config.getBoolean("hud-keep-alive.reopen-hud", false);
+        hudKeepAliveReopen = config.getBoolean("hud-keep-alive.reopen-hud", true);
         progressRefreshDelay = Math.max(0, config.getInt("progress-refresh-delay", 3));
         joinDelay = Math.max(0, config.getInt("joindelay", 60));
         deleteHud = config.getBoolean("deletehud", false);

@@ -37,6 +37,10 @@ public final class NavigationService {
     }
 
     public void toggleNavigation(Player player) {
+        toggleNavigation(player, null);
+    }
+
+    public void toggleNavigation(Player player, String questId) {
         if (player == null) {
             return;
         }
@@ -46,14 +50,19 @@ public final class NavigationService {
         }
 
         UUID uniqueId = player.getUniqueId();
-        if (navigatingPlayers.containsKey(uniqueId)) {
+        NavigationTarget currentTarget = navigatingPlayers.get(uniqueId);
+        if (questId == null && currentTarget != null) {
             stopNavigation(player);
             return;
         }
 
-        NavigationTarget target = findFirstTarget(player);
+        NavigationTarget target = questId == null ? findFirstTarget(player) : findTarget(player, questId);
         if (target == null) {
             XyChemdahShow.playerLog(player, "当前没有可导航的任务");
+            return;
+        }
+        if (currentTarget != null && currentTarget.getQuestId().equals(target.getQuestId())) {
+            stopNavigation(player);
             return;
         }
 
@@ -67,9 +76,12 @@ public final class NavigationService {
             return;
         }
 
+        if (currentTarget != null) {
+            clearDragonCoreArrows(player);
+        }
         navigatingPlayers.put(uniqueId, target);
         ensureTask();
-        XyChemdahShow.playerLog(player, "正在导航: " + target.getQuestName());
+        XyChemdahShow.playerLog(player, (currentTarget == null ? "正在导航: " : "已切换导航: ") + target.getQuestName());
     }
 
     public void stopNavigation(Player player) {
@@ -504,6 +516,20 @@ public final class NavigationService {
             NavigationTarget target = getTarget(player, quest);
             if (target != null) {
                 return target;
+            }
+        }
+        return null;
+    }
+
+    private NavigationTarget findTarget(Player player, String questId) {
+        if (questId == null || questId.trim().isEmpty()) {
+            return null;
+        }
+
+        List<Quest> quests = plugin.getChemdahBridge().getActiveQuests(player);
+        for (Quest quest : quests) {
+            if (quest != null && questId.equals(quest.getId())) {
+                return getTarget(player, quest);
             }
         }
         return null;

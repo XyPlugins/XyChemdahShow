@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import xy.xychemdahshow.XyChemdahShow;
 
 import java.util.Collections;
@@ -34,6 +35,16 @@ public final class PluginListener implements Listener {
             plugin.getChemdahBridge().refreshProfiles();
             plugin.getHudService().updateHud(player, true);
         }, plugin.getSettings().getJoinDelay());
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+        UUID uniqueId = player.getUniqueId();
+        scheduledRefreshPlayers.remove(uniqueId);
+        scheduledProgressRefreshPlayers.remove(uniqueId);
+        plugin.getHudService().forgetPlayer(player);
+        plugin.getNavigationService().stopNavigationSilently(player);
     }
 
     @EventHandler

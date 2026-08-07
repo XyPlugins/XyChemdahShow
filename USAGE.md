@@ -2,7 +2,7 @@
 
 ## 安装
 
-1. 将 `XyChemdahShow-1.6.6.jar` 放入服务器 `plugins` 目录。
+1. 将 `XyChemdahShow-1.6.8.jar` 放入服务器 `plugins` 目录。
 2. 确认服务器已安装 DragonCore 与 Chemdah。
 3. 可选安装 PlaceholderAPI 与 XyCore。
 4. 启动服务器生成 `plugins/XyChemdahShow/config.yml` 与 `questhud.yml`。
@@ -11,7 +11,7 @@
 ## 命令
 
 - `/xychshow refresh`：刷新自己的任务 HUD。
-- `/xychshow nav`：开始或停止当前任务导航。
+- `/xychshow nav [任务序号]`：开始、切换或停止任务导航。
 - `/xychshow reload`：重载配置并刷新在线玩家，需要 `xychemdahshow.admin`。
 
 ## Chemdah 任务展示字段
@@ -54,7 +54,7 @@ addon:
     z: 118
 ```
 
-玩家点击任务栏导航按钮后会执行 `/xychshow nav`。
+每个任务导航按钮会执行自己的显示序号，例如第一项执行 `/xychshow nav 1`，第二项执行 `/xychshow nav 2`。服务端会再次校验该任务仍在玩家当前任务列表中且存在导航坐标。
 
 如果任务导航坐标写在其他世界，玩家不在目标世界时不会直接开启路线，会提示先传送到 `addon.xychshow.location` 配置的地点，例如 `§e墨源城`。
 
@@ -75,10 +75,10 @@ addon:
 hud-keep-alive:
   enabled: true
   interval: 100
-  reopen-hud: false
+  reopen-hud: true
 ```
 
-默认每 100 tick 轻量刷新一次任务文本、标题变量和导航按钮显示状态。`reopen-hud` 默认关闭，避免频繁重新打开 HUD 影响玩家收起状态；如果轻量刷新仍无法恢复显示，再改为 `true` 测试。
+默认每 100 tick 轻量刷新一次任务文本、标题变量和导航按钮显示状态，并发送一次 HUD 恢复包。恢复时不会重发 `questhud.yml`，因此不会重置玩家拖动后的 HUD 位置。升级旧版本时，请检查已有 `config.yml`，将 `reopen-hud` 改为 `true` 后执行 `/xychshow reload`。如果希望保活时不恢复玩家手动收起的 HUD，可以改为 `false`。
 
 ## 空任务提示
 
@@ -125,16 +125,17 @@ navigation:
 - `任务标题_label`：显示任务第一行标题，例如 `[主线] 初入浮世`。
 - `任务信息_label`：显示类型、地点、目标、详情等内容。
 - `空任务_label`：无任务时显示 `config.yml -> empty-text`。
-- `任务导航按钮`：固定在标题左侧。
+- `任务导航按钮`：第一个任务的导航按钮，固定在第一行标题左侧。
+- `任务导航按钮_2` 至 `任务导航按钮_8`：后续任务的导航按钮，由插件定位并跟随任务内容滚动。
 - `任务导航按钮.tip`：鼠标悬停导航按钮时显示的 DragonCore 原生提示。
 
-玩家没有正在进行的任务，或任务没有导航坐标时，插件会隐藏 `任务导航按钮`；如果玩家之前已经开启导航，也会清理残留地面箭头。
+每个任务没有导航坐标时只隐藏自己的按钮，不影响其他任务。点击当前任务按钮会停止导航，点击另一个任务按钮会直接切换目标；玩家没有任何可导航任务时会清理残留地面箭头。
 
 ## 性能建议
 
 默认不会全服每 tick 扫任务。HUD 刷新由 Chemdah 事件、玩家进服、手动刷新和重载触发。
 
-HUD 保活默认 100 tick 运行一次，只刷新组件文本和按钮状态，不默认重发完整 HUD 配置。
+HUD 保活默认 100 tick 运行一次，刷新组件文本和按钮状态，并发送不带 YAML 的 HUD 恢复包；不会默认重发完整 HUD 配置。
 
 导航只对正在导航的玩家运行。DragonCore 箭头路线默认 `update-interval: 2`，更顺滑但发包更频繁；在线导航人数多时建议调到 `3` 或 `4`。`max-points`、`ground-search-down` 越大，贴地路线检查方块越多。
 

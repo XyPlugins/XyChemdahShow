@@ -137,7 +137,135 @@ Functions:
   actions:
     click_left: |-
       方法.播放声音;
-      方法.聊天('/xychshow nav');
+      方法.聊天('/xychshow nav 1');
+
+# 第 2 至第 8 个任务导航按钮由插件按任务标题行自动定位。
+# 没有对应任务、任务没有导航坐标时保持隐藏；滚动任务内容时会跟随标题移动。
+任务导航按钮_2:
+  type: "图片"
+  x: "任务栏背景.x + 任务栏背景.width -115"
+  y: "任务信息_label.y"
+  width: 10
+  height: 10
+  limitX: "任务栏背景.x"
+  limitY: "任务栏背景.y+15"
+  limitWidth: "任务栏背景.width"
+  limitHeight: "任务栏背景.height-17"
+  texture: "gui/任务栏/导航.png"
+  tip: "&e点击开始导航"
+  visible: false
+  actions:
+    click_left: |-
+      方法.播放声音;
+      方法.聊天('/xychshow nav 2');
+
+任务导航按钮_3:
+  type: "图片"
+  x: "任务栏背景.x + 任务栏背景.width -115"
+  y: "任务信息_label.y"
+  width: 10
+  height: 10
+  limitX: "任务栏背景.x"
+  limitY: "任务栏背景.y+15"
+  limitWidth: "任务栏背景.width"
+  limitHeight: "任务栏背景.height-17"
+  texture: "gui/任务栏/导航.png"
+  tip: "&e点击开始导航"
+  visible: false
+  actions:
+    click_left: |-
+      方法.播放声音;
+      方法.聊天('/xychshow nav 3');
+
+任务导航按钮_4:
+  type: "图片"
+  x: "任务栏背景.x + 任务栏背景.width -115"
+  y: "任务信息_label.y"
+  width: 10
+  height: 10
+  limitX: "任务栏背景.x"
+  limitY: "任务栏背景.y+15"
+  limitWidth: "任务栏背景.width"
+  limitHeight: "任务栏背景.height-17"
+  texture: "gui/任务栏/导航.png"
+  tip: "&e点击开始导航"
+  visible: false
+  actions:
+    click_left: |-
+      方法.播放声音;
+      方法.聊天('/xychshow nav 4');
+
+任务导航按钮_5:
+  type: "图片"
+  x: "任务栏背景.x + 任务栏背景.width -115"
+  y: "任务信息_label.y"
+  width: 10
+  height: 10
+  limitX: "任务栏背景.x"
+  limitY: "任务栏背景.y+15"
+  limitWidth: "任务栏背景.width"
+  limitHeight: "任务栏背景.height-17"
+  texture: "gui/任务栏/导航.png"
+  tip: "&e点击开始导航"
+  visible: false
+  actions:
+    click_left: |-
+      方法.播放声音;
+      方法.聊天('/xychshow nav 5');
+
+任务导航按钮_6:
+  type: "图片"
+  x: "任务栏背景.x + 任务栏背景.width -115"
+  y: "任务信息_label.y"
+  width: 10
+  height: 10
+  limitX: "任务栏背景.x"
+  limitY: "任务栏背景.y+15"
+  limitWidth: "任务栏背景.width"
+  limitHeight: "任务栏背景.height-17"
+  texture: "gui/任务栏/导航.png"
+  tip: "&e点击开始导航"
+  visible: false
+  actions:
+    click_left: |-
+      方法.播放声音;
+      方法.聊天('/xychshow nav 6');
+
+任务导航按钮_7:
+  type: "图片"
+  x: "任务栏背景.x + 任务栏背景.width -115"
+  y: "任务信息_label.y"
+  width: 10
+  height: 10
+  limitX: "任务栏背景.x"
+  limitY: "任务栏背景.y+15"
+  limitWidth: "任务栏背景.width"
+  limitHeight: "任务栏背景.height-17"
+  texture: "gui/任务栏/导航.png"
+  tip: "&e点击开始导航"
+  visible: false
+  actions:
+    click_left: |-
+      方法.播放声音;
+      方法.聊天('/xychshow nav 7');
+
+任务导航按钮_8:
+  type: "图片"
+  x: "任务栏背景.x + 任务栏背景.width -115"
+  y: "任务信息_label.y"
+  width: 10
+  height: 10
+  limitX: "任务栏背景.x"
+  limitY: "任务栏背景.y+15"
+  limitWidth: "任务栏背景.width"
+  limitHeight: "任务栏背景.height-17"
+  texture: "gui/任务栏/导航.png"
+  tip: "&e点击开始导航"
+  visible: false
+  actions:
+    click_left: |-
+      方法.播放声音;
+      方法.聊天('/xychshow nav 8');
 
 滚动_背景:
   type: "图片"

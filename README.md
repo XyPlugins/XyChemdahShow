@@ -21,11 +21,25 @@
 - 对 Chemdah 计数型子任务显示实时进度，例如 `1/10`。
 - Chemdah 任务接取、推进、完成、失败、重启、重载后自动刷新 HUD。
 - 支持可配置 HUD 保活刷新，缓解 DragonCore 任务栏待久后自动消失或内容丢失的问题。
-- 支持任务导航：Bukkit 粒子路线或 DragonCore 平面箭头路线。
+- 支持每项任务独立导航：Bukkit 粒子路线或 DragonCore 平面箭头路线。
 - 导航等玩家玩法提示安装 XyCore 时优先读取 `plugins/XyCore/config.yml -> messages.prefix`，未安装时使用本插件前缀独立运行；help、reload、后台日志等管理提示保留本插件前缀。
 - 保留奖励配置解析接口，当前轻量版不提供旧版背包奖励预览界面。
 
 ## 更新日志
+
+### 1.6.8 - 2026-08-07
+
+- 新增多任务独立导航按钮，默认 HUD 最多支持同时显示 8 个任务的导航入口。
+- 第 2 个及之后的导航按钮会跟随对应任务标题与滚动位置，不再只给第一项任务显示按钮。
+- 点击当前导航任务会停止导航，点击其他任务会直接切换目标。
+- 每个按钮只在对应任务存在有效导航坐标时显示；服务端会按当前 HUD 快照校验任务，防止客户端伪造序号导航未接取任务。
+- 第二个及之后的可导航任务标题会自动留出按钮宽度，避免图标遮挡标题。
+
+### 1.6.7 - 2026-08-06
+
+- 修复 DragonCore HUD 长时间无操作后被客户端回收，插件只刷新组件值却无法恢复任务栏的问题。
+- `hud-keep-alive.reopen-hud` 默认改为 `true`，保活时发送 HUD 恢复包但不重发 `questhud.yml`，避免重置玩家调整后的位置。
+- 旧服务器升级时请检查 `plugins/XyChemdahShow/config.yml`，将 `hud-keep-alive.reopen-hud` 改为 `true` 后执行 `/xychshow reload`。
 
 ### 1.6.6 - 2026-08-02
 
@@ -78,7 +92,7 @@
 ## 命令
 
 - `/xychshow refresh`：刷新自己的任务 HUD。
-- `/xychshow nav`：开始或停止当前任务导航。
+- `/xychshow nav [任务序号]`：开始、切换或停止任务导航；不写序号时保留原来的首个任务行为。
 - `/xychshow reload`：重载配置并刷新在线玩家，需要 `xychemdahshow.admin` 权限。
 
 ## HUD 界面配置
@@ -95,10 +109,10 @@
 hud-keep-alive:
   enabled: true
   interval: 100
-  reopen-hud: false
+  reopen-hud: true
 ```
 
-默认只轻量刷新组件文本、标题变量和导航按钮显示状态，不重发完整 HUD 配置。如果实测 DragonCore 会把整个 HUD 关闭，导致轻量刷新无效，再把 `reopen-hud` 改为 `true`。
+默认每 100 tick 轻量刷新组件文本、标题变量和导航按钮显示状态，并发送一次 HUD 恢复包。恢复时不会重发完整 HUD 配置，因此不会重置玩家拖动后的 HUD 位置。升级旧版本时，请检查服务器已有的 `config.yml`，把 `reopen-hud` 改为 `true` 后执行 `/xychshow reload`。
 
 ## 内部 HUD 变量
 
@@ -163,11 +177,11 @@ addon:
     z: 118
 ```
 
-玩家点击 `questhud.yml` 中的导航按钮后，会执行 `/xychshow nav`。插件会从玩家当前进行中的任务里寻找第一条带 `addon.xychshow.nav` 或 `addon.track` 坐标的任务，并在玩家前方生成指向目标坐标的地面粒子箭头。再次点击会停止导航，进入目标附近会自动停止。
+玩家点击 `questhud.yml` 中对应任务的导航按钮后，会执行 `/xychshow nav 1`、`/xychshow nav 2` 等带显示序号的命令。插件会按当前 HUD 快照找到该任务，再确认玩家仍持有任务且任务存在 `addon.xychshow.nav` 或 `addon.track` 坐标。点击当前导航任务会停止导航，点击其他任务会直接切换目标，进入目标附近会自动停止。
 
 如果玩家不在任务导航坐标对应的世界，插件不会开启路线，会提示玩家先传送到 `addon.xychshow.location` 配置的地点，例如 `§e墨源城`。
 
-当玩家没有正在进行的任务，或当前任务没有可读取的导航坐标时，插件会隐藏 `任务导航按钮`，并静默清理残留的地面箭头。
+每个任务的按钮独立判断：任务没有可读取的导航坐标时只隐藏自己的按钮，不影响其他任务。玩家没有任何可导航任务时，插件会静默清理残留的地面箭头。
 
 默认 HUD 已包含导航按钮组件：
 
@@ -178,10 +192,10 @@ addon:
   actions:
     click_left: |-
       方法.播放声音;
-      方法.聊天('/xychshow nav');
+      方法.聊天('/xychshow nav 1');
 ```
 
-默认 HUD 会把第一行任务标题单独写入 `任务标题_label`，因此导航按钮可以放在标题左侧，而 `类型/地点/目标/详情` 等内容仍由 `任务信息_label` 单独控制位置。
+默认 HUD 还包含 `任务导航按钮_2` 至 `任务导航按钮_8`，初始为隐藏。插件会把它们定位到对应任务标题左侧，并随 `任务信息_label` 一起滚动。第一行任务标题仍单独写入 `任务标题_label`，`类型/地点/目标/详情` 等内容继续由 `任务信息_label` 控制。
 
 导航粒子可在 `config.yml` 的 `navigation` 节点调整：
 
@@ -252,7 +266,7 @@ addon:
 
 插件不做每 tick 轮询。HUD 刷新由玩家进服、手动刷新、Chemdah 任务事件与 Chemdah 重载事件触发。普通刷新使用 `huddelay`，进度推进刷新使用 `progress-refresh-delay`。同一个玩家在刷新延迟内连续触发多次同类事件时，只会排队一次 HUD 刷新，避免击杀、挖掘等高频任务造成重复刷新。
 
-HUD 保活刷新由 `hud-keep-alive.interval` 控制，默认 `100 tick`。默认模式只刷新文本、变量和按钮显隐；`reopen-hud: true` 会额外重新打开 HUD，建议仅在轻量保活无法恢复客户端显示时启用。
+HUD 保活刷新由 `hud-keep-alive.interval` 控制，默认 `100 tick`。`reopen-hud: true` 会在刷新时额外重新打开 HUD，用于恢复 DragonCore 客户端长时间挂机后回收的任务栏；它不会重新发送 `questhud.yml`。如果希望保活时不恢复玩家手动收起的 HUD，可以改为 `false`。
 
 导航仅对正在导航的玩家运行。粒子路线使用 `navigation.particle-interval`，DragonCore 箭头路线使用 `dragoncore-arrow.update-interval`。DragonCore 箭头会缓存上一帧的贴图位置与参数；玩家不动、箭头未变化时不会重复发送同一批 WorldTexture 更新包。
 
